@@ -1,4 +1,5 @@
-
+`ifndef _PC_SV
+`define _PC_SV
 typedef enum logic [1:0] {PC_keep, PC_load, PC_inc1, PC_inc2} PC_operation_t;
 
 module PC_unit(
@@ -31,3 +32,5 @@ module PC_unit(
     end
     
 endmodule
+
+`endif

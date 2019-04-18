@@ -1,3 +1,5 @@
+`ifndef _CPU_MEMORY_SV
+`define _CPU_MEMORY_SV
 /*  2kb actual memory, 2kb ~ 8kb is the copy of first 2kb 
  *  000 0 0 000 0000 0000
  *     |   |2kb
@@ -32,3 +34,5 @@ module cpu_memory(              // data vaild at current circle
     end
 
 endmodule
+
+`endif

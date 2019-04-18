@@ -1,3 +1,6 @@
+`ifndef _MEMIO_SV
+`define _MEMIO_SV
+
 typedef enum logic [2:0] {MEM_READ1, MEM_READ2, MEM_WRITE, MEM_KEEP} MEM_opreation_t;
 
 module MemIO(
@@ -38,3 +41,5 @@ module MemIO(
     end
     
 endmodule
+
+`endif

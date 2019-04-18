@@ -1,4 +1,9 @@
-
+`ifndef _CONTROL_SV
+`define _CONTROL_SV
+`include "PC.sv"
+`include "cpu_memory.sv"
+`include "MemIO.sv"
+`include "MUXs.sv"
 /*  reset -> fetch -> decode -> execute &  check interrupt -> 
                 |____________________________________________|
     NMI：    $FFFA，$FFFB 
@@ -144,6 +149,6 @@ module CONTROL_unit(
     
 endmodule
 
-
+`endif
 
 

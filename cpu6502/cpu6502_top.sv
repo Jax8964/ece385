@@ -1,3 +1,10 @@
+`include "PC.sv"
+`include "cpu_memory.sv"
+`include "MemIO.sv"
+`include "MUXs.sv"
+`include "CONTROL.sv"
+
+
 module cpu6502_top(
     input logic             CLK, RESET, NMI,
     input logic [17:0]      SW,
@@ -41,7 +48,7 @@ module cpu6502_top(
     /*************************** Memory ******************************/
     logic [7:0] mem_data;
     logic [15:0]    addr;
-    MemIO MemIO0(.*, .SW(SW), .addr(addr), .data(mem_data), );
+    MemIO MemIO0(.*, .SW(SW), .addr(addr), .data(mem_data));
     MEM_MUX_unit MEM_MUX_unit0( .*, .data(mem_data) );      
     ADDR_MUX_unit ADDR_MUX_unit0(.*);           // addr
 

@@ -1,5 +1,6 @@
+`ifndef _ALU_SV
+`define _ALU_SV
 `include "ripple_adder.sv"
-
 typedef enum logic [3:0] {
         ALU_OR, ALU_AND, ALU_XOR, ALU_ADD, ALU_ADC, ALU_SUB, ALU_SUBC,
         ALU_SHL, ALU_SHR, ALU_ROR, ALU_ROL,
@@ -82,3 +83,5 @@ module ALU(
     ripple_adder ripple_adderH(.A(ALUH0), .B(ALUH1), .cin(cout), .cout(), .Sum(adderH));
     
 endmodule
+
+`endif

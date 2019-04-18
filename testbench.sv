@@ -49,12 +49,10 @@ RESET = '1;
 #4;
 RESET = '0;
 
-#100
+#100;
 
 
-for(i=0;i<10;i=i+1) begin
-    $display("memory %d\t: %h\n", i, cpu_memory_test.ram[i]);
-end
+
 
 
 

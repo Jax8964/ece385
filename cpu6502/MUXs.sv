@@ -1,3 +1,6 @@
+`ifndef _MUXS_SV
+`define _MUXS_SV
+
 /********************* ALU_MUX *****************************/
 typedef enum logic [2:0] {
     ALU_MA     // memory and A
@@ -73,11 +76,10 @@ typedef enum logic [2:0] {      // address input
 
 module ADDR_MUX_unit(
     input ADDR_MUX_t            ADDR_MUX,            // select address
-
     input logic [7:0]           MDRL, MDRH, ALUL, ALUH, A, X, Y,
     input logic [15:0]          PC,
 
-    output logic                addr
+    output logic [15:0]         addr
 );
 
     always_comb begin
@@ -117,3 +119,5 @@ module MEM_MUX_unit(                // memory store data input
     end
         
 endmodule
+
+`endif
