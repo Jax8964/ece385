@@ -23,13 +23,13 @@ module CONTROL_unit(
 );
     /************************* state enum *****************************/
     typedef enum logic [7:0] {
-        reset_0, reset_1, reset_2, reset_3,
-        fetch_0, fetch_1,
-        decode_0, decode_1,
-        counter_,
+        reset_0, reset_1, reset_2,
+        fetch_0, 
+        decode_0, 
+        counter_,   //5
 
-        read_abs_0, read_abs_1,         // read addressing modes
-        read_indir_0, read_indir_1, read_indir_2, read_indir_3,
+        read_abs_0,          // read addressing modes
+        read_indir_0,  // 6, 7
         jmp_abs_0, jmp_abs_1,
         jmp_indir_0, jmp_indir_1,
 
@@ -64,7 +64,8 @@ module CONTROL_unit(
             2'b00 : begin
                 case(opcode[7:2])
                     6'b010011: begin
-                        init_state = jmp_abs_0;
+                        init_state = read_abs_0;
+                        state_restore_next = jmp_abs_0;
                     end
                     6'b011011: begin
                         init_state = read_indir_0;
@@ -95,29 +96,29 @@ module CONTROL_unit(
         ADDR_MUX = ADDR_PC;
 
         case(state)
-            reset_0: begin
+            reset_0: begin          // 0
                 PC_operation = PC_load;
                 PC_MUX = PC_RESET;
                 next_state = reset_1;
             end
-            reset_1: begin
+            reset_1: begin          // 1
                 ADDR_MUX = ADDR_PC;     // load operator, 2bytes
                 MEM_opreation = MEM_READ2;
                 next_state = reset_2;
             end
-            reset_2: begin      
+            reset_2: begin      // 2
                 PC_MUX = PC_abs; 
                 PC_operation = PC_load;
                 next_state = fetch_0;
             end
-
+            // 3
             fetch_0: begin       // M[PC] -> MDR, PC + 1 -> PC
                 ADDR_MUX = ADDR_PC;
                 MEM_opreation = MEM_READ1;
                 PC_operation = PC_inc1;
                 next_state = decode_0;
             end
-            decode_0: begin       
+            decode_0: begin       // 4
                 ADDR_MUX = ADDR_PC;     // preload operator, operator -> MDR
                 MEM_opreation = MEM_READ2;
                 counter_RESET = '1;     // set counter
@@ -125,19 +126,23 @@ module CONTROL_unit(
                 next_state = init_state;
             end
 
-            jmp_abs_0: begin      
+            jmp_abs_0: begin      // 8
                 PC_MUX = PC_abs; 
                 PC_operation = PC_load;
                 next_state = counter_;
             end
-
-            read_indir_0: begin       
+            read_abs_0: begin       // 6
+                PC_operation = PC_inc2;
+                next_state = state_restore;
+            end           
+            read_indir_0: begin       // 7
                 ADDR_MUX = ADDR_MDR; 
                 MEM_opreation = MEM_READ2;
+                PC_operation = PC_inc2;
                 next_state = state_restore;
             end
 
-            counter_ : begin
+            counter_ : begin        // 5
                 if(counter == 0) begin
                     next_state = NMI ? NMI_0 : fetch_0;
                 end
