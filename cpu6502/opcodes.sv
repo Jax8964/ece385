@@ -45,7 +45,7 @@ package opcodes;
         parameter Zero_Page_X = 3'b101;           // operand 1 byte, xxx = M[(operand+X) mod 256]
         parameter Absolute_Y  = 3'b110;           // operand 2 byte, xxx = M[operand+Y]
         parameter Absolute_X  = 3'b111;           // operand 2 byte, xxx = M[operand+X].
-    endpackage
+    endpackage : addr_mode_01
 
  /************* cc = 10 *********************/
     parameter op_ASL = 8'b00000010;             // C-xxx << 1, set N Z C
@@ -65,17 +65,17 @@ package opcodes;
 
         parameter Zero_Page_X = 3'b101;           // operand 1 byte, xxx = M[(operand+X) mod 256]
         parameter Absolute_X  = 3'b111;           // operand 2 byte, xxx = M[operand+X].
-    endpackage
+    endpackage : addr_mode_10
  /************* cc = 00 *********************/
     parameter op_BIT = 8'b00100000;              // A & M, M7 -> N, M6 -> V, set Z
-    parameter op_JMP = 8'b01000000;              // operand 2 byte, jump
-    parameter op_JMP_abs = 8'b01100000;
+    parameter op_JMP_abs = 8'b01000000;              // operand 2 byte, jump
+    parameter op_JMP = 8'b01100000;
     parameter op_STY = 8'b10000000;              // Y -> M
     parameter op_LDY = 8'b10100000;              // M -> Y, set N Z
     parameter op_CPY = 8'b11000000;              // Y - M, set N Z C
     parameter op_CPX = 8'b11100000;              // X - M, set N Z C
 
-    package addr_mode_10;
+    package addr_mode_00;
         parameter Immediate   = 3'b000,           // operand 1 byte, xxx = operand
         parameter Zero_Page   = 3'b001,           // operand 1 byte, xxx = M[operand]
         parameter Accumulator = 3'b010,           // operand 0 byte, xxx = A
@@ -83,7 +83,7 @@ package opcodes;
 
         parameter Zero_Page_X = 3'b101,           // operand 1 byte, xxx = M[(operand+X) mod 256]
         parameter Absolute_X  = 3'b111,           // operand 2 byte, xxx = M[operand+X].
-    endpackage
+    endpackage : addr_mode_00
  /************* branch  *********************/
 // 7  bit  0
 // ---- ----
@@ -144,7 +144,7 @@ package opcodes;
     parameter op_TSX = 8'hBA;
     parameter op_DEX = 8'hCA;
     parameter op_NOP = 8'hEA;
-endpackage
+endpackage : opcodes
 `endif 
 // At power-up
 // P = $34[1] (IRQ disabled)[2]

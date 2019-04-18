@@ -8,22 +8,17 @@ timeprecision 1ns;
 logic           CLK;
 integer         i = 0;
 /////////////////////////////
-logic RESET, NMI;
-logic [17:0] SW;
-logic [3:0] KEY;
-
-logic [6:0] HEX0, HEX1, HEX2, HEX3, HEX4, HEX5, HEX6, HEX7;
-logic [17:0] LEDR;
-logic [7:0] LEDG;
-
-cpu6502_top cpu6502_top_test(.*);
-
-logic [15:0]    PC;
-logic [7:0]     state;
-always_comb begin
-    PC = cpu6502_top_test.PC;
-    state = cpu6502_top_test.CONTROL0.state;
+logic         w;
+logic [15:0]  address;
+logic [7:0]   in;
+logic [7:0]   OUTL,OUTH;
+logic [15:0]  data;
+cpu_memory cpu_memory_test(.*);
+always_ff @(posedge CLK) begin
+    data <= {OUTH,OUTL};
 end
+
+
 // Toggle the clock
 // #1 means wait for a delay of 1 timeunit
 
@@ -40,17 +35,59 @@ end
 
 initial begin: TEST_VECTORS
 
-RESET = '0;
-SW = '0;
-
+w = 0;
+address = 0;
+in = 0;
 #1;
-RESET = '1;
 
-#4;
-RESET = '0;
+w = 1;
+address = 4;
+in = 8'h99;
+#2;
+w = 1;
+address = 5;
+in = 8'h22;
 
-#100
+#2;
+w = 1;
+address = 6;
+in = 8'h00;
 
+#2;
+w = 0;
+address = 0;
+#2;
+address = 1;
+#2;
+address = 2;
+#2;
+address = 3;
+#2;
+address = 4;
+#2;
+address = 5;
+#2;
+address = 6;
+#10;
+#2;
+w = 0;
+address = 3;
+in = 8'hff;
+
+// #2;
+// w = 1;
+// address = 7;
+// in = 8'hab;
+// #2;
+// w = 0;
+// address = 7;
+// in = 8'hab;
+
+
+// #2;
+// w = 0;
+// address = 3;
+// in = 8'hab;
 
 for(i=0;i<10;i=i+1) begin
     $display("memory %d\t: %h\n", i, cpu_memory_test.ram[i]);

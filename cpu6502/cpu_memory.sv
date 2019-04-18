@@ -4,18 +4,18 @@
  *     |8kb
  *
  */
-module cpu_memory(              // data vaild at next circle 
+module cpu_memory(              // data vaild at current circle 
     input logic         CLK,
-    input logic         w,r,
+    input logic         w,
     input logic [15:0]  address,
     input logic [7:0]   in,
 
-    output logic [7:0]  out
+    output logic [7:0]  OUTL, OUTH
 );
     logic [7:0] ram [0:2047];
     initial begin
         $readmemh("H:/fpgaNES/NES/cpu6502/cpu_mem.txt",ram);
-        $display("0x00: %h", ram[0]);
+        //$display("0x00: %h", ram[0]);
     end
     logic vaild_address;
     logic [10:0] real_address; 
@@ -24,11 +24,11 @@ module cpu_memory(              // data vaild at next circle
         real_address = address[10:0];
     end
     
-    always @(posedge CLK) begin
+    always @(negedge CLK) begin
         if(w & vaild_address)
             ram[real_address] <= in;
-        if(r)
-            out <= ram[real_address];
+        OUTL = ram[real_address];
+        OUTH = ram[real_address+1];
     end
 
 endmodule
