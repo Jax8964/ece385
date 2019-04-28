@@ -4,33 +4,40 @@
  *  000 0 0 000 0000 0000
  *     |   |2kb
  *     |8kb
+  * 0x8000 ~ 0xffff is game code
+ *  dual port, second read port for ppu
  *
+ *  
  */
 module cpu_memory(              // data vaild at current circle 
     input logic         CLK,
     input logic         w,
-    input logic [15:0]  address,
-    input logic [7:0]   in,
+    input logic [15:0]  address, address_ext,
+    input logic [7:0]   data,
 
-    output logic [7:0]  OUTL, OUTH
+    output logic [7:0]  out, out_ext
 );
-    logic [7:0] ram [0:2047];
+    logic [15:0] ram [0:16'hffff];
+    logic [15:0] real_address, real_address_ext; 
     initial begin
-        $readmemh("H:/fpgaNES/NES/cpu6502/cpu_mem.txt",ram);
+        $readmemh("H:/fpgaNES/NES/cpu6502/test.txt",ram);
+        
         //$display("0x00: %h", ram[0]);
     end
-    logic vaild_address;
-    logic [10:0] real_address; 
     always_comb begin
-        vaild_address = ~(address[15] | address[14] | address[13]);  // ==000
-        real_address = address[10:0];
+        real_address = address;
+        real_address_ext = address_ext;
+        if(address < 16'h2000)
+            real_address = {5'b0,address[10:0]};
+        if(address_ext < 16'h2000)
+            real_address_ext = {5'b0,address_ext[10:0]};        
     end
     
     always @(negedge CLK) begin
-        if(w & vaild_address)
-            ram[real_address] <= in;
-        OUTL = ram[real_address];
-        OUTH = ram[real_address+1];
+        if(w)
+            ram[real_address] <= data;
+        out = ram[real_address];
+        out_ext = ram[real_address_ext];
     end
 
 endmodule

@@ -4,7 +4,7 @@
 
 module add_sub_8bit
 (
-    input   logic          add_sub,     // 0 adder | 1 subtractor
+    input   logic          add_sub,     // 0 adder A+B| 1 subtractor  A-B
     input   logic[7:0]     A,
     input   logic[7:0]     B,
     input   logic          cin,
@@ -33,13 +33,6 @@ module ripple_adder
     output  logic[7:0]     Sum,
     output  logic          cout
 );
-
-    /* TODO
-     *
-     * Insert code here to implement a ripple adder.
-     * Your code should be completly combinational (don't use always_ff or always_latch).
-     * Feel free to create sub-modules or other files. */
-    
     logic c0;
     four_bit_ripple_adder f0(.x(A[3:0]),   .y(B[3:0]),   .z(cin), .c(c0), .s(Sum[3:0]));
     four_bit_ripple_adder f1(.x(A[7:4]),   .y(B[7:4]),   .z(c0), .c(cout), .s(Sum[7:4]));

@@ -1,11 +1,21 @@
 `ifndef _ALU_SV
 `define _ALU_SV
-`include "ripple_adder.sv"
+//`include "ripple_adder.sv"
+`include "carry_lookahead_adder.sv"
 typedef enum logic [3:0] {
-        ALU_OR, ALU_AND, ALU_XOR, ALU_ADD, ALU_ADC, ALU_SUB, ALU_SUBC,
-        ALU_SHL, ALU_SHR, ALU_ROR, ALU_ROL,
-        ALU_ADD16,
-        ALU_PASS
+        ALU_OR,         // ALUL0 | ALUL1
+        ALU_AND,        // ALUL0 & ALUL1
+        ALU_XOR,         // 8 bit 
+        ALU_ADC,         // 8 bit 
+        ALU_SUB,         // ALUL0 - ALUL1 
+        ALU_SUBC,        // ALUL0 - ALUL1 - C
+        ALU_SHL,         // 8 bit 
+        ALU_SHR,         // 8 bit 
+        ALU_ROR,         // 8 bit 
+        ALU_ROL,         // 8 bit 
+        ALU_ADD16,        // 16 bit adder  ALUL0 + ALUL1, ALUH0 + ALUH1
+        ALU_PASS0,        // out = ALUH0, ALUL0
+        ALU_PAS1          // out = ALUH1, ALUL1
 } ALU_operation_t;
 
 module ALU(                 
@@ -22,7 +32,7 @@ module ALU(
     logic add_sub;
     always_comb begin
         ALU_N = ALUL_out[7];        // negative flag
-        ALU_Z = ALUL_out == 8'b0;  // zero
+        ALU_Z = (ALUL_out == 8'b0);  // zero
         ALU_C = cout;
         ALU_V = (~ALUL0[7]) & (~ALUL1[7]) & (adderL[7]) | (ALUL0[7]) & (ALUL1[7]) & (~adderL[7]);
         ALUH_out = 8'b0;
@@ -36,8 +46,6 @@ module ALU(
                 ALUL_out = ALUL0 & ALUL1;
             ALU_XOR :
                 ALUL_out = ALUL0 ^ ALUL1;
-            ALU_ADD :
-                ALUL_out = adderL;
             ALU_ADC : begin
                 real_cin = cin;
                 ALUL_out = adderL;
@@ -46,7 +54,7 @@ module ALU(
                 add_sub =  1'b1;
                 ALUL_out = adderL;
             end
-            ALU_SUC : begin
+            ALU_SUBC : begin
                 add_sub =  1'b1;
                 real_cin = cin;
                 ALUL_out = adderL;
@@ -71,16 +79,19 @@ module ALU(
                 ALUL_out = adderL;
                 ALUH_out = adderH;
             end
-            ALU_PASS : begin
+            ALU_PASS0 : begin
                 ALUL_out = ALUL0;
                 ALUH_out = ALUH0;
             end
-
+            ALU_PAS1 : begin
+                ALUL_out = ALUL1;
+                ALUH_out = ALUH1;
+            end
         endcase
     end
-
-    add_sub_8bit add_sub_8bitL(.add_sub(add_sub), .A(ALUL0), .B(ALUL1), .cin(real_cin), .cout(cout), .ret(adderL));
-    ripple_adder ripple_adderH(.A(ALUH0), .B(ALUH1), .cin(cout), .cout(), .Sum(adderH));
+    carry_lookahead_adder16 carry_lookahead_adder160(
+        .A({ALUL0,ALUH0}), .B({ALUL1,ALUH1}), .sum({adderH,adderL}), .cin(real_cin), .cout(cout) );
+    sub_8 sub_80(.A(ALUL0), .B(ALUL1), .sum(), .cin(real_cin), .cout(cout));
     
 endmodule
 

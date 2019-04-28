@@ -1,3 +1,5 @@
+`ifndef _HEXDRIVER_SV
+`define _HEXDRIVER_SV
 module HexDriver (input  [3:0]  In0,
                   output logic [6:0]  Out0);
 	
@@ -25,3 +27,5 @@ module HexDriver (input  [3:0]  In0,
 	end
 
 endmodule
+
+`endif
