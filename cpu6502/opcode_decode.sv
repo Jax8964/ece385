@@ -13,7 +13,7 @@ typedef enum logic [7:0] {
 	addr_immed,	// immediate	1
 	addr_indir, addr_indir1, addr_indir2, addr_indir3, addr_indir4,
 	addr_indexX, addr_indexX1, addr_indexX2,
-	addr_indexY, addr_indexY1, addr_indexY2,
+	addr_indexY, addr_indexY1, addr_indexY2, addr_indexY3,
 	addr_zero, addr_zero1,
 	addr_zeroX, addr_zeroX1,
 	addr_zeroY, addr_zeroY1,

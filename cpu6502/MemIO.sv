@@ -118,7 +118,7 @@ module ADDR_MUX_unit(
             ADDR_MAR1 : 
                 addr = 16'(MAR+1);
             ADDR_MARL1 : 
-                addr = {8'b0, (MAR[7:0]+8'b01)};
+                addr = {MAR[15:8], (MAR[7:0]+8'b01)};
             ADDR_MDR :
                 addr = {MDRH,MDRL};
             ADDR_MDRL :

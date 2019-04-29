@@ -210,8 +210,11 @@ module CONTROL_unit(
                 `MEM_GET1
                 next_state = addr_indir3;
             end
-            addr_indir3: begin          
-                `MEM_GET2
+            addr_indir3: begin          //TODO: now all indirect will in same bank
+                //`MEM_GET2
+                ADDR_MUX = ADDR_MARL1;  
+                MEMIO_R = 1;  
+                MEM_LDMDRH = 1;
                 next_state = addr_indir4;
             end
             addr_indir4: begin       // load data (1 byte)
@@ -228,7 +231,7 @@ module CONTROL_unit(
                 ALU_MUX =  ALU_XM;
                 ALU_operation = ALU_ADD16;
                 ADDR_MUX = ADDR_ALUL;
-                `ADDR_PRE_READ
+                `MEM_GET1
                 next_state = addr_indexX2;
             end   
             addr_indexX2: begin        // (X+operand) mod 256
@@ -238,7 +241,7 @@ module CONTROL_unit(
                 next_state = addr_indir4;
             end 
 //1, M[operand] + Y mod 256 is addr
-            addr_indexY: begin       // PC+1 -> PC
+            addr_indexY: begin       // PC+1 -> PC  M[operand]
                 `MEM_FETCH1
                 next_state = addr_indexY1;
             end      
@@ -247,10 +250,16 @@ module CONTROL_unit(
                 `MEM_GET1
                 next_state = addr_indexY2;
             end   
-            addr_indexY2: begin        // M[operand] + Y mod 256
+            addr_indexY2: begin        // M[operand+1 mod 256]
+                ADDR_MUX = ADDR_MARL1;  
+                MEMIO_R = 1;  
+                MEM_LDMDRH = 1;
+                next_state = addr_indexY3;
+            end 
+            addr_indexY3: begin        //  + Y 
                 ALU_MUX =  ALU_YM;
                 ALU_operation = ALU_ADD16;
-                ADDR_MUX = ADDR_ALUL;
+                ADDR_MUX = ADDR_ALU;
                 `ADDR_PRE_READ
                 next_state = exe_state;
             end   
@@ -761,7 +770,8 @@ module CONTROL_unit(
 
             counter_ : begin        // 5
                 B_flag = 0;
-                next_state = counter_1;//CONTINUE ? counter_1 : counter_;
+                //next_state = counter_1;
+                next_state = CONTINUE ? counter_1 : counter_;
             //     if(counter == 0) begin
             //         next_state = NMI ? NMI_0 : fetch_;
             //     end
@@ -769,17 +779,17 @@ module CONTROL_unit(
             
             end
             counter_1 : begin
-                //if(CONTINUE)
-                //    next_state = counter_1;
-                //else begin
-                    // if(NMI)
-                    //     next_state = NMI_;
-                    // else if (IRQ && !(`FLAG_I))
-                    //     next_state = IRQ_;
-                    // else 
-                    //     next_state = fetch_;
-                //end
-                next_state = fetch_;
+                if(CONTINUE)
+                   next_state = counter_1;
+                else begin
+                    if(NMI)
+                        next_state = NMI_;
+                    else if (IRQ && !(`FLAG_I))
+                        next_state = IRQ_;
+                    else 
+                        next_state = fetch_;
+                end
+                //next_state = fetch_;
             end
             default : 
                 next_state = fetch_;

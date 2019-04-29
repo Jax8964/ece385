@@ -13,7 +13,7 @@ cpu6502_top cpu6502_top_test(.*,.CLOCK_50(CLK), .KEY({2'b1,~NMI,~RESET}),
 );
 
 
-logic [15:0]    PC, MAR, addr;        // mem address source
+logic [15:0]    PC, MAR;
 state_t         state;
 logic [7:0]     A,              // regs
                 X, 
@@ -21,8 +21,10 @@ logic [7:0]     A,              // regs
                 SR,             // status register
                 SP,             // stack pointer
                 ALUL, ALUH,     // ALU output
-                ALUL0, ALUL1, MEMatXX,
+                ALUL0, ALUL1, 
                 MDRL, MDRH;     // mem readed data
+logic [15:0] addr;
+logic [7:0]  cpu_mem_out;
 always_comb begin
     state = cpu6502_top_test.CONTROL0.state;
     PC = cpu6502_top_test.PC;
@@ -39,6 +41,7 @@ always_comb begin
     ALUH = cpu6502_top_test.ALUH;
     MDRL = cpu6502_top_test.MDRL;
     MDRH = cpu6502_top_test.MDRH;
+    cpu_mem_out = cpu6502_top_test.mem_data;
 end
 
 //\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
