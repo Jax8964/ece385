@@ -36,7 +36,7 @@ module subtracter8
     logic real_cin;
     always_comb begin
         real_B = ~B;
-        real_cin = ~cin;
+        real_cin = cin;
         c[0] = real_cin&pg[0] | gg[0];
         c[1] = real_cin&pg[0]&pg[1] | gg[0]&pg[1] | gg[1];
         cout = c[1];

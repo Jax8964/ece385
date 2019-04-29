@@ -93,6 +93,7 @@ typedef enum logic [3:0] {      // address source
     ADDR_SP1,
     ADDR_MAR,
     ADDR_MAR1,
+    ADDR_MARL1,
 
     ADDR_RESET,    
     ADDR_NMI,
@@ -116,6 +117,8 @@ module ADDR_MUX_unit(
                 addr = MAR;
             ADDR_MAR1 : 
                 addr = 16'(MAR+1);
+            ADDR_MARL1 : 
+                addr = {8'b0, (MAR[7:0]+8'b01)};
             ADDR_MDR :
                 addr = {MDRH,MDRL};
             ADDR_MDRL :

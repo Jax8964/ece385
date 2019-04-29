@@ -21,7 +21,7 @@ logic [7:0]     A,              // regs
                 SR,             // status register
                 SP,             // stack pointer
                 ALUL, ALUH,     // ALU output
-                ALUL0, ALUL1,
+                ALUL0, ALUL1, MEMatXX,
                 MDRL, MDRH;     // mem readed data
 always_comb begin
     state = cpu6502_top_test.CONTROL0.state;

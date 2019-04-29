@@ -229,8 +229,14 @@ module CONTROL_unit(
                 ALU_operation = ALU_ADD16;
                 ADDR_MUX = ADDR_ALUL;
                 `ADDR_PRE_READ
-                next_state = addr_indir3;
+                next_state = addr_indexX2;
             end   
+            addr_indexX2: begin        // (X+operand) mod 256
+                ADDR_MUX = ADDR_MARL1;  
+                MEMIO_R = 1;  
+                MEM_LDMDRH = 1;
+                next_state = addr_indir4;
+            end 
 //1, M[operand] + Y mod 256 is addr
             addr_indexY: begin       // PC+1 -> PC
                 `MEM_FETCH1
@@ -410,7 +416,7 @@ module CONTROL_unit(
                 ALU_operation = ALU_SHR;
                 ADDR_MUX = ADDR_MAR;
                 MEMIO_W  = 1;
-                `SET_ZC    
+                `SET_NZC    
                 next_state = counter_;
             end         
             op_ROR_: begin
@@ -438,9 +444,9 @@ module CONTROL_unit(
 // A shift reght, add 0            ZC
             op_LSRA_: begin
                 ALU_MUX = ALU_AM;       // A -> ALUL0
-                ALU_operation = ALU_SHL;
+                ALU_operation = ALU_SHR;
                 A_LD = 1;
-                `SET_NZ
+                `SET_NZC
                 next_state = counter_;
             end
             op_RORA_: begin

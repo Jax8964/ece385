@@ -1,6 +1,10 @@
 `ifndef _ALU_SV
 `define _ALU_SV
 `include "carry_lookahead_adder.sv"
+/* 
+https://stackoverflow.com/questions/41084426/borrow-during-subtracting-operation-sbc-asm-instruction-on-6502
+On a 6502 SBC n is exactly identical to ADC (n EOR $FF) — it's one's complement. So carry is clear when A + (operand ^ 0xff) + existing carry is less than 256.
+*/
 typedef enum logic [3:0] {
         ALU_OR,         // ALUL0 | ALUL1
         ALU_AND,        // ALUL0 & ALUL1
@@ -62,6 +66,7 @@ module ALU(
                 ALUL_out = adderL;
             end
             ALU_SUB : begin
+                real_cin = 1;
                 ALUL_out = sub_out;
                 ALU_V = sub_V;
                 ALU_C = sub_cout;

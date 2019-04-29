@@ -29,7 +29,7 @@ module cpu6502_top(
         data_wr0 = $fopen("H:/fpgaNES/NES/cpu6502/test_result.txt","w");
     end
     always  @(posedge (out_state == counter_1))begin
-            $fwrite(data_wr0,"%4h\t%P\tA:%2X X:%2X Y:%2X P:%2X SP:%2X\n", PC, CONTROL0.exe_state, A, X, Y, SR, SP );
+            $fwrite(data_wr0,"%4h\t%P \tA:%2X X:%2X Y:%2X P:%2X SP:%2X\n", PC, CONTROL0.exe_state, A, X, Y, SR, SP );
     end
     // synthesis translate_on
     always_comb begin
