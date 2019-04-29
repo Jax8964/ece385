@@ -1,108 +1,3 @@
-typedef enum logic [7:0] {
-    reset_0, reset_1, reset_2,
-    fetch_, 
-    decode_, 
-    counter_,   counter_1,
-	branch_,
-
-	addr_none,
-    addr_abs, addr_abs1, addr_abs2,  // M[]    2
-	addr_absX,addr_absX1, addr_absX2,	//  M[]+X   unsigned	2
-	addr_absY, addr_absY1, addr_absY2,	//  M[]+Y   unsigned	2
-	addr_relative,
-	addr_immed,	// immediate	1
-	addr_indir, addr_indir1, addr_indir2, addr_indir3, addr_indir4,
-	addr_indexX, addr_indexX1, 
-	addr_indexY, addr_indexY1, addr_indexY2,
-	addr_zero, addr_zero1,
-	addr_zeroX, addr_zeroX1,
-	addr_zeroY, addr_zeroY1,
-	// first set, cc = 01
-	op_ORA_,
-	op_AND_,
-	op_EOR_,
-	op_ADC_,
-	op_STA_,
-	op_LDA_,
-	op_CMP_,
-	op_SBC_,
-	// second set, cc = 10
-	op_ASL_,
-	op_ROL_,
-	op_LSR_,
-	op_ROR_,
-	op_ASLA_,
-	op_ROLA_,
-	op_LSRA_,
-	op_RORA_,
-	op_STX_,
-	op_LDX_,
-	op_DEC_,
-	op_INC_,
-	//
-	op_STY_,
-	op_LDY_,
-	op_BIT_,
-	op_CPY_,
-	op_CPX_,
-	// branch
-	op_BRK_, op_BRK_1, op_BRK_2,
-	op_BCC_,
-	op_BCS_,
-	op_BEQ_,
-	op_BMI_,
-	op_BNE_,
-	op_BPL_,
-	op_BVC_,
-	op_BVS_,
-
-	op_JMP_, 
-	op_JSR_, op_JSR_1,	op_JSR_2,
-	op_RTS_, op_RTS_1, op_RTS_2, op_RTS_3,
-	op_RTI_, op_RTI_1, op_RTI_2, op_RTI_3, 
-// operation on X Y SR
-	op_PHP_,
-	op_PLP_, op_PLP_1,
-	op_PHA_,
-	op_PLA_, op_PLA_1,
-	op_DEY_,
-	op_TAY_,
-	op_INY_,
-	op_INX_,
-	op_CLC_,
-	op_SEC_,
-	op_CLI_,
-	op_SEI_,
-	op_TYA_,
-	op_CLV_,
-	op_CLD_,
-	op_SED_,
-	op_TXA_,
-	op_TXS_,
-	op_TAX_,
-	op_TSX_,
-	op_DEX_,
-	op_NOP_, 
-	
-	NMI_, NMI_1, NMI_2, NMI_3, NMI_4, NMI_5, 
-	IRQ_, IRQ_1, IRQ_2, IRQ_3, IRQ_4, IRQ_5
-} state_t;
-
-
-/*
- * addressing mode if need memory operation
- *
- *
- */
-module opcode_addr_state (
-	input  logic CLK,
-	input  logic [7:0] in,
-	output logic [7:0] out
-);
-
-// This module will be synthesized into a RAM
-always_ff @ (negedge CLK)
-case (in)
 8'h00: out<=addr_none;        8'h01: out<=addr_indexX;      8'h02: out<=fetch_;           8'h03: out<=fetch_;           
 8'h04: out<=fetch_;           8'h05: out<=addr_zero;        8'h06: out<=addr_zero;        8'h07: out<=fetch_;           
 8'h08: out<=addr_none;        8'h09: out<=addr_immed;       8'h0a: out<=addr_none;        8'h0b: out<=fetch_;           
@@ -166,19 +61,15 @@ case (in)
 8'hf0: out<=addr_relative;    8'hf1: out<=addr_indexY;      8'hf2: out<=fetch_;           8'hf3: out<=fetch_;           
 8'hf4: out<=fetch_;           8'hf5: out<=addr_zeroX;       8'hf6: out<=addr_zeroX;       8'hf7: out<=fetch_;           
 8'hf8: out<=addr_none;        8'hf9: out<=addr_absY;        8'hfa: out<=fetch_;           8'hfb: out<=fetch_;           
-8'hfc: out<=fetch_;           8'hfd: out<=addr_absX;        8'hfe: out<=addr_absX;        8'hff: out<=fetch_;    
-endcase
-endmodule
+8'hfc: out<=fetch_;           8'hfd: out<=addr_absX;        8'hfe: out<=addr_absX;        8'hff: out<=fetch_;           
 
-module opcode_exe_state (
-	input  logic CLK,
-	input  logic [7:0] in,
-	output logic [7:0] out
-);
 
-// This module will be synthesized into a RAM
-always_ff @ (negedge CLK)
-case (in)
+
+		exe
+
+
+
+
 8'h00: out<=op_BRK_;          8'h01: out<=op_ORA_;          8'h02: out<=fetch_;           8'h03: out<=fetch_;           
 8'h04: out<=fetch_;           8'h05: out<=op_ORA_;          8'h06: out<=op_ASL_;          8'h07: out<=fetch_;           
 8'h08: out<=op_PHP_;          8'h09: out<=op_ORA_;          8'h0a: out<=op_ASLA_;         8'h0b: out<=fetch_;           
@@ -244,24 +135,13 @@ case (in)
 8'hf8: out<=op_SED_;          8'hf9: out<=op_SBC_;          8'hfa: out<=fetch_;           8'hfb: out<=fetch_;           
 8'hfc: out<=fetch_;           8'hfd: out<=op_SBC_;          8'hfe: out<=op_INC_;          8'hff: out<=fetch_;           
 
-endcase
-endmodule
+
+
+		info [ read_en | page_cross_en ]
 
 
 
-/*
- * bit[0] : affected by page-crossing 
- * bit[1] : need memory read 
- */
-module opcode_info (
-	input  logic CLK,
-	input  logic [7:0] in,
-	output logic [7:0] out
-);
 
-// This module will be synthesized into a RAM
-always_ff @ (negedge CLK)
-case (in)
 8'h00: out<=0;                8'h01: out<=2;                8'h02: out<=0;                8'h03: out<=0;                
 8'h04: out<=0;                8'h05: out<=2;                8'h06: out<=2;                8'h07: out<=0;                
 8'h08: out<=0;                8'h09: out<=2;                8'h0a: out<=0;                8'h0b: out<=0;                
@@ -327,83 +207,74 @@ case (in)
 8'hf8: out<=0;                8'hf9: out<=3;                8'hfa: out<=0;                8'hfb: out<=0;                
 8'hfc: out<=0;                8'hfd: out<=3;                8'hfe: out<=2;                8'hff: out<=0;                
 
-endcase
-endmodule
+
+
+		timing
 
 
 
-module opcode_timing (
-	input  logic CLK,
-	input  logic [7:0] in,
-	output logic [7:0] out
-);
 
-// This module will be synthesized into a RAM
-always_ff @ (negedge CLK)
-case (in)
-8'h00: out<=15;		8'h01: out<=15;		8'h02: out<=15;		8'h03: out<=15;		
-8'h04: out<=15;		8'h05: out<=15;		8'h06: out<=15;		8'h07: out<=15;		
-8'h08: out<=15;		8'h09: out<=15;		8'h0a: out<=15;		8'h0b: out<=15;		
-8'h0c: out<=15;		8'h0d: out<=15;		8'h0e: out<=15;		8'h0f: out<=15;		
-8'h10: out<=15;		8'h11: out<=15;		8'h12: out<=15;		8'h13: out<=15;		
-8'h14: out<=15;		8'h15: out<=15;		8'h16: out<=15;		8'h17: out<=15;		
-8'h18: out<=15;		8'h19: out<=15;		8'h1a: out<=15;		8'h1b: out<=15;		
-8'h1c: out<=15;		8'h1d: out<=15;		8'h1e: out<=15;		8'h1f: out<=15;		
-8'h20: out<=15;		8'h21: out<=15;		8'h22: out<=15;		8'h23: out<=15;		
-8'h24: out<=15;		8'h25: out<=15;		8'h26: out<=15;		8'h27: out<=15;		
-8'h28: out<=15;		8'h29: out<=15;		8'h2a: out<=15;		8'h2b: out<=15;		
-8'h2c: out<=15;		8'h2d: out<=15;		8'h2e: out<=15;		8'h2f: out<=15;		
-8'h30: out<=15;		8'h31: out<=15;		8'h32: out<=15;		8'h33: out<=15;		
-8'h34: out<=15;		8'h35: out<=15;		8'h36: out<=15;		8'h37: out<=15;		
-8'h38: out<=15;		8'h39: out<=15;		8'h3a: out<=15;		8'h3b: out<=15;		
-8'h3c: out<=15;		8'h3d: out<=15;		8'h3e: out<=15;		8'h3f: out<=15;		
-8'h40: out<=15;		8'h41: out<=15;		8'h42: out<=15;		8'h43: out<=15;		
-8'h44: out<=15;		8'h45: out<=15;		8'h46: out<=15;		8'h47: out<=15;		
-8'h48: out<=15;		8'h49: out<=15;		8'h4a: out<=15;		8'h4b: out<=15;		
-8'h4c: out<=15;		8'h4d: out<=15;		8'h4e: out<=15;		8'h4f: out<=15;		
-8'h50: out<=15;		8'h51: out<=15;		8'h52: out<=15;		8'h53: out<=15;		
-8'h54: out<=15;		8'h55: out<=15;		8'h56: out<=15;		8'h57: out<=15;		
-8'h58: out<=15;		8'h59: out<=15;		8'h5a: out<=15;		8'h5b: out<=15;		
-8'h5c: out<=15;		8'h5d: out<=15;		8'h5e: out<=15;		8'h5f: out<=15;		
-8'h60: out<=15;		8'h61: out<=15;		8'h62: out<=15;		8'h63: out<=15;		
-8'h64: out<=15;		8'h65: out<=15;		8'h66: out<=15;		8'h67: out<=15;		
-8'h68: out<=15;		8'h69: out<=15;		8'h6a: out<=15;		8'h6b: out<=15;		
-8'h6c: out<=15;		8'h6d: out<=15;		8'h6e: out<=15;		8'h6f: out<=15;		
-8'h70: out<=15;		8'h71: out<=15;		8'h72: out<=15;		8'h73: out<=15;		
-8'h74: out<=15;		8'h75: out<=15;		8'h76: out<=15;		8'h77: out<=15;		
-8'h78: out<=15;		8'h79: out<=15;		8'h7a: out<=15;		8'h7b: out<=15;		
-8'h7c: out<=15;		8'h7d: out<=15;		8'h7e: out<=15;		8'h7f: out<=15;		
-8'h80: out<=15;		8'h81: out<=15;		8'h82: out<=15;		8'h83: out<=15;		
-8'h84: out<=15;		8'h85: out<=15;		8'h86: out<=15;		8'h87: out<=15;		
-8'h88: out<=15;		8'h89: out<=15;		8'h8a: out<=15;		8'h8b: out<=15;		
-8'h8c: out<=15;		8'h8d: out<=15;		8'h8e: out<=15;		8'h8f: out<=15;		
-8'h90: out<=15;		8'h91: out<=15;		8'h92: out<=15;		8'h93: out<=15;		
-8'h94: out<=15;		8'h95: out<=15;		8'h96: out<=15;		8'h97: out<=15;		
-8'h98: out<=15;		8'h99: out<=15;		8'h9a: out<=15;		8'h9b: out<=15;		
-8'h9c: out<=15;		8'h9d: out<=15;		8'h9e: out<=15;		8'h9f: out<=15;		
-8'ha0: out<=15;		8'ha1: out<=15;		8'ha2: out<=15;		8'ha3: out<=15;		
-8'ha4: out<=15;		8'ha5: out<=15;		8'ha6: out<=15;		8'ha7: out<=15;		
-8'ha8: out<=15;		8'ha9: out<=15;		8'haa: out<=15;		8'hab: out<=15;		
-8'hac: out<=15;		8'had: out<=15;		8'hae: out<=15;		8'haf: out<=15;		
-8'hb0: out<=15;		8'hb1: out<=15;		8'hb2: out<=15;		8'hb3: out<=15;		
-8'hb4: out<=15;		8'hb5: out<=15;		8'hb6: out<=15;		8'hb7: out<=15;		
-8'hb8: out<=15;		8'hb9: out<=15;		8'hba: out<=15;		8'hbb: out<=15;		
-8'hbc: out<=15;		8'hbd: out<=15;		8'hbe: out<=15;		8'hbf: out<=15;		
-8'hc0: out<=15;		8'hc1: out<=15;		8'hc2: out<=15;		8'hc3: out<=15;		
-8'hc4: out<=15;		8'hc5: out<=15;		8'hc6: out<=15;		8'hc7: out<=15;		
-8'hc8: out<=15;		8'hc9: out<=15;		8'hca: out<=15;		8'hcb: out<=15;		
-8'hcc: out<=15;		8'hcd: out<=15;		8'hce: out<=15;		8'hcf: out<=15;		
-8'hd0: out<=15;		8'hd1: out<=15;		8'hd2: out<=15;		8'hd3: out<=15;		
-8'hd4: out<=15;		8'hd5: out<=15;		8'hd6: out<=15;		8'hd7: out<=15;		
-8'hd8: out<=15;		8'hd9: out<=15;		8'hda: out<=15;		8'hdb: out<=15;		
-8'hdc: out<=15;		8'hdd: out<=15;		8'hde: out<=15;		8'hdf: out<=15;		
-8'he0: out<=15;		8'he1: out<=15;		8'he2: out<=15;		8'he3: out<=15;		
-8'he4: out<=15;		8'he5: out<=15;		8'he6: out<=15;		8'he7: out<=15;		
-8'he8: out<=15;		8'he9: out<=15;		8'hea: out<=15;		8'heb: out<=15;		
-8'hec: out<=15;		8'hed: out<=15;		8'hee: out<=15;		8'hef: out<=15;		
-8'hf0: out<=15;		8'hf1: out<=15;		8'hf2: out<=15;		8'hf3: out<=15;		
-8'hf4: out<=15;		8'hf5: out<=15;		8'hf6: out<=15;		8'hf7: out<=15;		
-8'hf8: out<=15;		8'hf9: out<=15;		8'hfa: out<=15;		8'hfb: out<=15;		
-8'hfc: out<=15;		8'hfd: out<=15;		8'hfe: out<=15;		8'hff: out<=15;	
-endcase
-endmodule
+8'h00: out<=15;               8'h01: out<=15;               8'h02: out<=15;               8'h03: out<=15;               
+8'h04: out<=15;               8'h05: out<=15;               8'h06: out<=15;               8'h07: out<=15;               
+8'h08: out<=15;               8'h09: out<=15;               8'h0a: out<=15;               8'h0b: out<=15;               
+8'h0c: out<=15;               8'h0d: out<=15;               8'h0e: out<=15;               8'h0f: out<=15;               
+8'h10: out<=15;               8'h11: out<=15;               8'h12: out<=15;               8'h13: out<=15;               
+8'h14: out<=15;               8'h15: out<=15;               8'h16: out<=15;               8'h17: out<=15;               
+8'h18: out<=15;               8'h19: out<=15;               8'h1a: out<=15;               8'h1b: out<=15;               
+8'h1c: out<=15;               8'h1d: out<=15;               8'h1e: out<=15;               8'h1f: out<=15;               
+8'h20: out<=15;               8'h21: out<=15;               8'h22: out<=15;               8'h23: out<=15;               
+8'h24: out<=15;               8'h25: out<=15;               8'h26: out<=15;               8'h27: out<=15;               
+8'h28: out<=15;               8'h29: out<=15;               8'h2a: out<=15;               8'h2b: out<=15;               
+8'h2c: out<=15;               8'h2d: out<=15;               8'h2e: out<=15;               8'h2f: out<=15;               
+8'h30: out<=15;               8'h31: out<=15;               8'h32: out<=15;               8'h33: out<=15;               
+8'h34: out<=15;               8'h35: out<=15;               8'h36: out<=15;               8'h37: out<=15;               
+8'h38: out<=15;               8'h39: out<=15;               8'h3a: out<=15;               8'h3b: out<=15;               
+8'h3c: out<=15;               8'h3d: out<=15;               8'h3e: out<=15;               8'h3f: out<=15;               
+8'h40: out<=15;               8'h41: out<=15;               8'h42: out<=15;               8'h43: out<=15;               
+8'h44: out<=15;               8'h45: out<=15;               8'h46: out<=15;               8'h47: out<=15;               
+8'h48: out<=15;               8'h49: out<=15;               8'h4a: out<=15;               8'h4b: out<=15;               
+8'h4c: out<=15;               8'h4d: out<=15;               8'h4e: out<=15;               8'h4f: out<=15;               
+8'h50: out<=15;               8'h51: out<=15;               8'h52: out<=15;               8'h53: out<=15;               
+8'h54: out<=15;               8'h55: out<=15;               8'h56: out<=15;               8'h57: out<=15;               
+8'h58: out<=15;               8'h59: out<=15;               8'h5a: out<=15;               8'h5b: out<=15;               
+8'h5c: out<=15;               8'h5d: out<=15;               8'h5e: out<=15;               8'h5f: out<=15;               
+8'h60: out<=15;               8'h61: out<=15;               8'h62: out<=15;               8'h63: out<=15;               
+8'h64: out<=15;               8'h65: out<=15;               8'h66: out<=15;               8'h67: out<=15;               
+8'h68: out<=15;               8'h69: out<=15;               8'h6a: out<=15;               8'h6b: out<=15;               
+8'h6c: out<=15;               8'h6d: out<=15;               8'h6e: out<=15;               8'h6f: out<=15;               
+8'h70: out<=15;               8'h71: out<=15;               8'h72: out<=15;               8'h73: out<=15;               
+8'h74: out<=15;               8'h75: out<=15;               8'h76: out<=15;               8'h77: out<=15;               
+8'h78: out<=15;               8'h79: out<=15;               8'h7a: out<=15;               8'h7b: out<=15;               
+8'h7c: out<=15;               8'h7d: out<=15;               8'h7e: out<=15;               8'h7f: out<=15;               
+8'h80: out<=15;               8'h81: out<=15;               8'h82: out<=15;               8'h83: out<=15;               
+8'h84: out<=15;               8'h85: out<=15;               8'h86: out<=15;               8'h87: out<=15;               
+8'h88: out<=15;               8'h89: out<=15;               8'h8a: out<=15;               8'h8b: out<=15;               
+8'h8c: out<=15;               8'h8d: out<=15;               8'h8e: out<=15;               8'h8f: out<=15;               
+8'h90: out<=15;               8'h91: out<=15;               8'h92: out<=15;               8'h93: out<=15;               
+8'h94: out<=15;               8'h95: out<=15;               8'h96: out<=15;               8'h97: out<=15;               
+8'h98: out<=15;               8'h99: out<=15;               8'h9a: out<=15;               8'h9b: out<=15;               
+8'h9c: out<=15;               8'h9d: out<=15;               8'h9e: out<=15;               8'h9f: out<=15;               
+8'ha0: out<=15;               8'ha1: out<=15;               8'ha2: out<=15;               8'ha3: out<=15;               
+8'ha4: out<=15;               8'ha5: out<=15;               8'ha6: out<=15;               8'ha7: out<=15;               
+8'ha8: out<=15;               8'ha9: out<=15;               8'haa: out<=15;               8'hab: out<=15;               
+8'hac: out<=15;               8'had: out<=15;               8'hae: out<=15;               8'haf: out<=15;               
+8'hb0: out<=15;               8'hb1: out<=15;               8'hb2: out<=15;               8'hb3: out<=15;               
+8'hb4: out<=15;               8'hb5: out<=15;               8'hb6: out<=15;               8'hb7: out<=15;               
+8'hb8: out<=15;               8'hb9: out<=15;               8'hba: out<=15;               8'hbb: out<=15;               
+8'hbc: out<=15;               8'hbd: out<=15;               8'hbe: out<=15;               8'hbf: out<=15;               
+8'hc0: out<=15;               8'hc1: out<=15;               8'hc2: out<=15;               8'hc3: out<=15;               
+8'hc4: out<=15;               8'hc5: out<=15;               8'hc6: out<=15;               8'hc7: out<=15;               
+8'hc8: out<=15;               8'hc9: out<=15;               8'hca: out<=15;               8'hcb: out<=15;               
+8'hcc: out<=15;               8'hcd: out<=15;               8'hce: out<=15;               8'hcf: out<=15;               
+8'hd0: out<=15;               8'hd1: out<=15;               8'hd2: out<=15;               8'hd3: out<=15;               
+8'hd4: out<=15;               8'hd5: out<=15;               8'hd6: out<=15;               8'hd7: out<=15;               
+8'hd8: out<=15;               8'hd9: out<=15;               8'hda: out<=15;               8'hdb: out<=15;               
+8'hdc: out<=15;               8'hdd: out<=15;               8'hde: out<=15;               8'hdf: out<=15;               
+8'he0: out<=15;               8'he1: out<=15;               8'he2: out<=15;               8'he3: out<=15;               
+8'he4: out<=15;               8'he5: out<=15;               8'he6: out<=15;               8'he7: out<=15;               
+8'he8: out<=15;               8'he9: out<=15;               8'hea: out<=15;               8'heb: out<=15;               
+8'hec: out<=15;               8'hed: out<=15;               8'hee: out<=15;               8'hef: out<=15;               
+8'hf0: out<=15;               8'hf1: out<=15;               8'hf2: out<=15;               8'hf3: out<=15;               
+8'hf4: out<=15;               8'hf5: out<=15;               8'hf6: out<=15;               8'hf7: out<=15;               
+8'hf8: out<=15;               8'hf9: out<=15;               8'hfa: out<=15;               8'hfb: out<=15;               
+8'hfc: out<=15;               8'hfd: out<=15;               8'hfe: out<=15;               8'hff: out<=15;               

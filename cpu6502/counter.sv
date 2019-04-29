@@ -26,7 +26,8 @@ module Counter_dec #(parameter N = 8)(
             counter_halt :
                 step = '0;
             counter_inc1 :
-                step = `CLOCK_PERIOD-1;
+                step = N'(`CLOCK_PERIOD-1);
+            default : ;
         endcase
     end
     

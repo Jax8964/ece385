@@ -568,7 +568,6 @@ module CONTROL_unit(
                 Y_LD = 1;
                 `SET_NZ
                 next_state = counter_;   
-            end
             op_TYA_: begin
                 `ALU_PASS_Y
                 A_LD = 1;
@@ -754,7 +753,6 @@ module CONTROL_unit(
 
 
             counter_ : begin        // 5
-                B_flag = 0;
                 next_state = counter_1;//CONTINUE ? counter_1 : counter_;
             //     if(counter == 0) begin
             //         next_state = NMI ? NMI_0 : fetch_;
@@ -766,17 +764,15 @@ module CONTROL_unit(
                 //if(CONTINUE)
                 //    next_state = counter_1;
                 //else begin
-                    // if(NMI)
-                    //     next_state = NMI_;
-                    // else if (IRQ && !(`FLAG_I))
-                    //     next_state = IRQ_;
-                    // else 
-                    //     next_state = fetch_;
+                    if(NMI)
+                        next_state = NMI_;
+                    else if (IRQ && !(`FLAG_I))
+                        next_state = IRQ_;
+                    else 
+                        next_state = fetch_;
                 //end
-                next_state = fetch_;
             end
-            default : 
-                next_state = fetch_;
+            default : ;
         endcase
     end
     

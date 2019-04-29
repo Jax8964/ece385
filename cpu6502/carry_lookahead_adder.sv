@@ -22,21 +22,23 @@ module carry_lookahead_adder16
 
 endmodule
 
-module sub_8
+module subtracter8
 (
     input   logic[7:0]     A,       // A - B - cin
     input   logic[7:0]     B,
     input   logic          cin,
     output  logic[7:0]     Sum,
     output  logic          cout       
-)
+);
     logic [1:0] pg, gg;
     logic [1:0] c;
+    logic [7:0] real_B;
+    logic real_cin;
     always_comb begin
         real_B = ~B;
         real_cin = ~cin;
-        c[0] = cin&p[0] | g[0];
-        c[1] = cin&p[0]&p[1] | g[0]&p[1] | g[1];
+        c[0] = real_cin&pg[0] | gg[0];
+        c[1] = real_cin&pg[0]&pg[1] | gg[0]&pg[1] | gg[1];
         cout = c[1];
     end 
     carry_lookahead_adder_4bits f0(.A(A[3:0]),   .B(real_B[3:0]),   .cin(real_cin), .s(Sum[3:0]), .pg(pg[0]), .gg(gg[0]));
@@ -44,7 +46,10 @@ module sub_8
 
 endmodule
 
-module carry_lookahead_adder_4bits ////////////////////
+
+
+
+module carry_lookahead_adder_4bits 
 (
     input   logic[3:0]     A,
     input   logic[3:0]     B,
@@ -85,3 +90,12 @@ module CLU(
     end
 endmodule
 
+
+module full_adder(
+    input x,y,z,
+    output c,s
+);
+    assign s = x^y^z;
+    assign c = (x&y)|(y&z)|(x&z);
+
+endmodule
