@@ -68,6 +68,7 @@ module PPU_ROM(              // data vaild at current circle
 
     initial begin
         $readmemh("F:/fpgaNES/NES/ppu/mali.txt",ram);
+        $readmemh("F:/fpgaNES/NES/ppu/palette.txt",palette_);
     end
     always @(negedge CLK) begin
         if(w)

@@ -33,6 +33,9 @@ module render_screen(
        input logic  [7:0]   rom_ext,
        input logic          pattern_select,
 
+       output logic [4:0]   palette_addr,        // palette
+       input  logic [7:0]   palette_out,
+
        output logic [15:0]  buff_addr,           // buffer
        output logic [7:0]   buff_data,
        output logic         buff_w,
@@ -67,11 +70,11 @@ module render_screen(
 
        logic         prepare;
        assign        prepare = (counter == '0 && n_scanlines < 9'd240 );
-       rendering_scanline rendering_scanline0(.*, .dy_line(n_scanlines[7:0]) );  
        always_comb begin
               clear_status = n_scanlines == 0 && counter == '0;
               set_vertical_blank = n_scanlines ==240 && counter == '0;
        end 
+       rendering_scanline rendering_scanline0(.*, .dy_line(n_scanlines[7:0]) );  
   
        
 endmodule
@@ -96,6 +99,9 @@ module rendering_scanline(
        output logic [15:0]  address_ext,         // rom
        input logic  [7:0]   rom_ext,
        input logic          pattern_select,
+
+       output logic [4:0]   palette_addr,
+       input  logic [7:0]   palette_out,
 
        output logic [15:0]  buff_addr,           // buffer
        output logic [7:0]   buff_data,
@@ -153,8 +159,9 @@ module rendering_scanline(
        end
 
        always_comb begin
-              buff_data = {4'b0, color3_buf[15], color2_buf[15], color1_buf[15], color0_buf[15]};
-              buff_addr = {scroll_y[7:0], dx - 5'd2, counter[5:3]};
+              palette_addr = {1'b0,  color3_buf[15], color2_buf[15], color1_buf[15], color0_buf[15]};
+              buff_data = palette_out;
+              buff_addr = {scroll_y[7:0], dx - 5'd2, ticks};
               buff_w = '0;
               counter_reset = 0;
               counter_halt = 0;
@@ -192,9 +199,9 @@ module rendering_scanline(
                      end
                      line_write_1: 
                      begin
-                            dx_inc = counter[5:0] == 6'b111110;       // tick = 7.75
-                            buff_w = counter[2:1] == 2'b01;
-                            if(counter[11:3] == (12'(fine_scroll_x) + 255) ) 
+                            dx_inc = counter[5:0] == 6'b111101;       // tick = 7.75
+                            buff_w = counter[2:0] == 3'b010;
+                            if(counter == {(9'(fine_scroll_x) + 255 + 16), 3'b011} ) 
                             begin
                                    state_next = line_finish_;
                             end

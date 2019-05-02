@@ -75,25 +75,27 @@ VSO. ....
 
     logic [7:0]  PPU_rom_data, rom_ext;      
     logic [15:0] address_ext;
-    logic [15:0] buff_addr;        // buffer
+    logic [15:0] buff_addr;        // buffer write
     logic [7:0]  buff_data;
     logic        buff_w;
-    logic [7:0]  PPU_color;
-    logic [7:0]  VGA_palette_n;
+    logic [4:0]  palette_addr;      // palette read
+    logic [7:0]  palette_out;
+
+    logic [7:0]  PPU_color;     // buffer read
     
     PPU_ROM PPU_ROM0( .w(PPUdata_w_prev), .address( {PPUaddrH, PPUaddrL} ), 
                         .data(reg_data), .out(PPU_rom_data), .out_ext(rom_ext), 
-                         .address_palette(PPU_color[3:0]), .out_palette(VGA_palette_n), .*);
+                         .address_palette(palette_addr), .out_palette(palette_out), .*);
 
     vga_buffer vga_buffer0( 
         .w(buff_w), .address(buff_addr), .address_ext( {DrawY[7:0],DrawX[7:0] } ),
         .data(buff_data), .out_ext(PPU_color),
         .*  );  // TODO
 
-    vga_palette vga_palette0(.n_color(VGA_palette_n[5:0]), .red(VGA_R), .blue(VGA_B), .green(VGA_G));
+    vga_palette vga_palette0(.n_color(palette_out[5:0]), .red(VGA_R), .blue(VGA_B), .green(VGA_G));
 
     // synthesis translate_off
-
+    integer buff_store;
     initial begin
         buff_store = $fopen("F:/fpgaNES/NES/ppu/ppu_buff.txt","w");
     end

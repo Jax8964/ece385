@@ -5,10 +5,14 @@ timeprecision 1ns;
 logic         CLK;
 /////////////////////////////////
 reg RESET;
+logic [7:0]       reg_data_in;
+logic [15:0]      addr;
+reg  r,w;
+logic [7:0]      reg_data_out;
 logic NMI;
+
 ppu_top ppu_test(
                     .*, .mirroring_type('0), 
-                    .reg_data_in('0), .addr('0), .r('0), .w('0), .reg_data_out(), 
                     .cpu_address_ext(), .cpu_data_ext(),
                     .DrawX('0), .DrawY('0), .VGA_B(), .VGA_R(), .VGA_G()
      ); 
@@ -25,6 +29,7 @@ logic [7:0]   color0, color1, color2, color3;
 logic [4:0]   dx;
 logic       shift_reg_clk, render_8pixel, buff_w;
 logic [2:0]  ticks;
+logic [4:0]  palette_addr, palette_real_addr;
 logic [15:0] buff_addr;
 logic [7:0]  buff_data;
 logic [15:0]  nametable_addr, attribute_addr;
@@ -33,7 +38,7 @@ logic [15:0]  rom_address_ext, rom_inner_addr;
 logic [2:0]   attribute_byte_offset;
 pixel_state_t pixel_state;
 logic [7:0] rom_ext;
-logic [7:0]   pattern_number;
+logic [7:0]   pattern_number, palette_out;
 always_comb begin
     render_counter = ppu_test.render_screen0.ppu_counter11.counter[11:3];
     counter_reset = ppu_test.render_screen0.RESET;
@@ -55,6 +60,7 @@ always_comb begin
     shift_reg_clk = line_counter[2];
     render_8pixel = ppu_test.render_screen0.rendering_scanline0.render_8pixel;
     ticks = line_counter[5:3];
+    palette_addr = ppu_test.render_screen0.rendering_scanline0.palette_addr;
     buff_addr = ppu_test.render_screen0.rendering_scanline0.buff_addr;
     buff_data = ppu_test.render_screen0.rendering_scanline0.buff_data;
     buff_w = ppu_test.render_screen0.rendering_scanline0.buff_w;
@@ -68,7 +74,8 @@ always_comb begin
     pattern_number =  ppu_test.render_screen0.rendering_scanline0.rendering_get_8pixel0.n_pattern;
     rom_address_ext =  ppu_test.render_screen0.rendering_scanline0.rendering_get_8pixel0.address_ext;
     rom_inner_addr = ppu_test.PPU_ROM0.real_address_ext;
-
+    palette_out = ppu_test.PPU_ROM0.out_palette;
+    palette_real_addr = ppu_test.PPU_ROM0.address_palette;
 end
 
 //\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
@@ -81,13 +88,18 @@ end
 initial begin: TEST_VECTORS
 /////////////////////////////////////////
 RESET = '0;
-
+reg_data_in = '0;
+addr = '0;
+r = 0;
+w = 0;
 #2;
 RESET = '1;
 
 #8;
 RESET = '0;
-
+#2;
+addr = 16'h2006;
+w = 
 
 
 
