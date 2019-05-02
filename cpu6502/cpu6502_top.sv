@@ -18,9 +18,18 @@ module cpu6502_top(
 
      output logic [6:0]      HEX0, HEX1, HEX2, HEX3, HEX4, HEX5, HEX6, HEX7,
      output logic [17:0]     LEDR,
-     output logic [7:0]      LEDG
+     output logic [7:0]      LEDG,
+     
+    input logic              NMI,
+    input logic [7:0]        keycode,
+
+    output logic [15:0]      addr, 
+    input logic [7:0]        ppu_reg_data, 
+    input logic [15:0]       address_ext,
+    output logic [7:0]       mem_data_ext, ALU_data_out,
+    output logic             ppu_reg_w, ppu_reg_r
 );
-    logic CLK, RESET, NMI, IRQ, CONTINUE, HALT;      // I/O input
+    logic CLK, RESET, IRQ, CONTINUE, HALT;      // I/O input
 
     state_t out_state;
     integer data_wr0;
@@ -37,7 +46,6 @@ module cpu6502_top(
     end
     always_ff @(posedge CLK) begin
         RESET <= ~KEY[0];	
-        NMI <= ~KEY[1];
         IRQ <= ~KEY[2];
         CONTINUE <= ~KEY[3];
         HALT <= SW[17];        
@@ -79,9 +87,8 @@ module cpu6502_top(
 
 
     /*************************** Memory ******************************/
-    logic [15:0] addr, address_ext;
-    logic [7:0]  mem_data, gamepad_data, ppu_reg_data, mem_data_ext;
-    logic        mem_w, mem_r, gamepad_w, gamepad_r, ppu_reg_w, ppu_reg_r;
+    logic [7:0]  mem_data, gamepad_data;
+    logic        mem_w, mem_r, gamepad_w, gamepad_r;
     MemIO MemIO0(.*, 
                  .w(MEMIO_W),
                  .r(MEMIO_R)
@@ -89,7 +96,7 @@ module cpu6502_top(
     ADDR_MUX_unit ADDR_MUX_unit0(.*);           // addr
     cpu_memory cpu_memory0(.*, .w(mem_w), .r(mem_r), .address(addr), .data(ALUL), .out(mem_data), .out_ext(mem_data_ext));
     GAMEPAD GAMEPAD0(.*, .w(gamepad_w), .r(gamepad_r), .address(addr), .data(ALUL), .out(gamepad_data));
-
+    assign  ALU_data_out = ALUL;
 
     /*************************** ALU ******************************/
     logic [7:0]           ALUH0, ALUH1, ALUL0, ALUL1;
@@ -105,7 +112,7 @@ module cpu6502_top(
 
 
     always_comb begin           // I/O output
-        address_ext = SW[15:0];
+        ///address_ext = SW[15:0];
         LEDR[15:0] = PC;
 	    LEDR[16] = RESET;
     end

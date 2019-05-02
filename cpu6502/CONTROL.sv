@@ -35,6 +35,15 @@ module CONTROL_unit(
 
     output state_t                out_state
 );
+    logic NMI_restore, NMI_clear;
+    always_ff @(posedge CLK) begin
+        if(NMI_clear)
+            NMI_restore <= '0;
+        else if(NMI)
+            NMI_restore <= '1;
+        else    
+            NMI_restore <= NMI_restore;
+    end
     /************************* state  *****************************/
     state_t state, next_state, addr_state, exe_state, exe_state_next;
     logic [7:0] decode_info, decode_info_next;
@@ -66,6 +75,7 @@ module CONTROL_unit(
     always_comb begin
         out_state = state;
         Counter_operation = counter_run;
+        NMI_clear = '0;
 
         LD_decode_info = '0;
         next_state = fetch_;
@@ -688,6 +698,7 @@ module CONTROL_unit(
             NMI_: begin     // push PCH
                 `ALU_PASS_PCH
                 `STACK_PUSH
+                NMI_clear = '1;
                 next_state = NMI_1;
             end
             NMI_1: begin     // push PCL
@@ -770,19 +781,14 @@ module CONTROL_unit(
 
             counter_ : begin        // 5
                 B_flag = 0;
-                //next_state = counter_1;
-                next_state = CONTINUE ? counter_1 : counter_;
-            //     if(counter == 0) begin
-            //         next_state = NMI ? NMI_0 : fetch_;
-            //     end
-            //     else
-            
+                next_state = counter_out == 4 ?  counter_1 : counter_;
+                //next_state = CONTINUE ? counter_1 : counter_;
             end
             counter_1 : begin
-                if(CONTINUE)
-                   next_state = counter_1;
-                else begin
-                    if(NMI)
+                // if(CONTINUE)
+                //    next_state = counter_1;
+                // else begin
+                    if(NMI_restore)
                         next_state = NMI_;
                     else if (IRQ && !(`FLAG_I))
                         next_state = IRQ_;
@@ -790,7 +796,7 @@ module CONTROL_unit(
                         next_state = fetch_;
                 end
                 //next_state = fetch_;
-            end
+            //end
             default : 
                 next_state = fetch_;
         endcase

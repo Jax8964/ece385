@@ -57,7 +57,7 @@ module MemIO(
         gamepad_r = 0;
         ppu_reg_w = 0; 
         ppu_reg_r = 0;
-        if (addr[15:13] == 3'b001) begin
+        if (addr[15:13] == 3'b001 | addr == 16'h4014) begin
             ppu_reg_w = w;
             ppu_reg_r = r;
             data = ppu_reg_data;

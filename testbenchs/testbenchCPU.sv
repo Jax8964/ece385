@@ -1,15 +1,17 @@
 `include "../cpu6502/cpu6502_top.sv" 
-module testbench();
+module testbenchCPU();
 timeunit 10ns;	
 timeprecision 1ns;
 logic         CLK;
 /////////////////////////////////
-reg RESET, NMI;
-reg [17:0] SW;
+reg RESET;
+reg [17:0]  SW;
+reg          NMI;
+reg [7:0]    keycode;
 
-cpu6502_top cpu6502_top_test(.*,.CLOCK_50(CLK), .KEY({2'b1,~NMI,~RESET}),
+cpu6502_top cpu6502_top_test(.*,.CLOCK_50(CLK), .KEY({3'b1,~RESET}),
     .HEX0(), .HEX1(), .HEX2(), .HEX3(), .HEX4(), .HEX5(), .HEX6(), .HEX7(), 
-    .LEDR(), .LEDG()
+    .LEDR(), .LEDG(), .addr(), .ppu_reg_data(), .address_ext(), .mem_data_ext(), .ALU_data_out(), .ppu_reg_w(), .ppu_reg_r()
 );
 
 

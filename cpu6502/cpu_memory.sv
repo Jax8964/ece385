@@ -17,7 +17,7 @@ module cpu_memory(              // data vaild at current circle
 
     output logic [7:0]  out, out_ext
 );
-    logic [15:0] ram [0:16'hffff];
+    logic [7:0] ram [0:16'hffff];
     logic [15:0] real_address, real_address_ext; 
     initial begin
         $readmemh("H:/fpgaNES/NES/cpu6502/test.txt",ram);
