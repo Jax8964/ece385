@@ -19,10 +19,7 @@ always_comb begin
     prepare = ppu_test.render_screen0.prepare;
 end
 
-logic [11:0] counter_;
-ppu_counter1 ppu_counter1_test(.*, .reset(RESET), .halt('0), .max(8'd339), .counter(counter_) );
-logic [8:0] max;
-assign max = ppu_counter1_test.max;
+
 //\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 always begin : CLOCK_GENERATION
 #1 CLK = ~CLK;
@@ -43,7 +40,7 @@ RESET = '0;
 
 
 
-#40000000;
+#200;
 
 
 

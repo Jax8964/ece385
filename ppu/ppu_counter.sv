@@ -2,8 +2,8 @@
 `define _PPU_COUNTER_SV
 
 module ppu_counter(
-    input logic       CLK, RESET, set, halt,
-    input logic [8:0] init, max,
+    input logic       CLK, RESET, set, 
+    input logic [8:0] init,
 
     output logic [11:0] counter
 
@@ -29,16 +29,23 @@ module ppu_counter1(
     output logic [11:0] counter
 
 );
-    reg [11:0] counter_;
+    logic [11:0] counter_next;
+    logic [8:0]  max_store;
     always_ff @(posedge CLK) begin
-        if(reset)
-            counter_ <= '0;
-        else if (halt)
-            counter_ <= counter_;
-        else
-            counter_ <= (counter_[11:3] == max) ? '0 : (counter_ +12'd1);
+        if (reset) begin
+            counter <= '0;
+            max_store <= max;
+        end
+        else 
+            counter <= counter_next;
     end
-    assign counter = counter_;
+    always_comb begin
+        case( {halt, (counter[11:3] == max)} )
+            2'b10:  counter_next = counter;
+            2'b01:  counter_next = '0;
+            default : counter_next = counter + 12'd1;
+        endcase
+    end
     
 endmodule
 

@@ -49,18 +49,24 @@ module render_screen(
               counter_halt = '0;
               counter_up = counter[11:3]; 
        end
-       logic [8:0]   n_scanlines;         // 0 ~ 260
+       logic [8:0]   n_scanlines, n_scanlines_next;         // 0 ~ 260
        always_ff @(posedge CLK) begin
               if(RESET)
                      n_scanlines <= '0;
               else
-                     n_scanlines <= counter_set ? (n_scanlines == 8'd259 ? '0 : n_scanlines+1): n_scanlines;
+                     n_scanlines <= n_scanlines_next;
+       end
+       logic scanlines_end;
+       always_comb begin
+              scanlines_end = counter == {9'(260),3'b0};
+              if (scanlines_end && n_scanlines == 8'd260)
+                     n_scanlines_next = '0;
+              else 
+                     n_scanlines_next = n_scanlines_next + (scanlines_end ? 9'b1 : '0);
        end
 
-     
-
        logic         prepare;
-       assign        prepare = counter == 1;
+       assign        prepare = (counter == '0 && n_scanlines < 9'd240 );
        rendering_scanline rendering_scanline0(.*, .dy_line(n_scanlines[7:0]) );  
        always_comb begin
               clear_status = n_scanlines == 0 && counter == '0;
@@ -91,6 +97,7 @@ module rendering_scanline(
 
        logic  [8:0]         scroll_x, scroll_y, scroll_y_next;
        assign               scroll_y_next = scroll_y_in + 9'(dy_line);
+       
        logic [4:0]          dx;           // 0 ~ 31
        logic                dx_inc;
 
