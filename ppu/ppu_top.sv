@@ -80,9 +80,11 @@ VSO. ....
     logic        buff_w;
     logic [7:0]  PPU_color;
     logic [7:0]  VGA_palette_n;
+    
     PPU_ROM PPU_ROM0(.*, .w(PPUdata_w_prev), .address( {PPUaddrH, PPUaddrL} ), 
                         .data(reg_data), .out(PPU_rom_data), .out_ext(rom_ext), 
                          .address_palette(PPU_color[3:0]), .out_palette(VGA_palette_n) );
+
     vga_buffer vga_buffer0(.*, 
         .w(buff_w), .address(buff_addr), .address_ext( {DrawY[7:0],DrawX[7:0] } ),
         .data(buff_data), .out_ext(PPU_color) );  // TODO

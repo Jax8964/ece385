@@ -27,7 +27,7 @@ Vertical blanking lines         (241-260)
 
 module render_screen(
        input logic          CLK, RESET,
-       input logic [8:0]    scroll_x_in, scroll_y_in,  // 0~511, 0~255 | 0~479, 0~255
+       input logic [8:0]    scroll_x_in, scroll_y_in,  // 0~511,  | 0~479, 
 
        output logic [15:0]  address_ext,         // rom
        input logic  [7:0]   rom_ext,
@@ -41,12 +41,15 @@ module render_screen(
 
 );
 
-       logic  counter_set;
+       logic  counter_halt;
        logic [11:0]  counter;
-       ppu_counter ppu_counter0(.*, .set(counter_set), .init('0) );
-       assign counter_set = counter[11:3] == 9'd339;
-
-       logic [8:0]   n_scanlines;
+       logic [8:0]   counter_up;
+       ppu_counter1 ppu_counter0(.*, .reset(RESET), .halt(counter_halt), .max(8'd339) );
+       always_comb begin
+              counter_halt = '0;
+              counter_up = counter[11:3]; 
+       end
+       logic [8:0]   n_scanlines;         // 0 ~ 260
        always_ff @(posedge CLK) begin
               if(RESET)
                      n_scanlines <= '0;
