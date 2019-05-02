@@ -67,7 +67,7 @@ module PPU_ROM(              // data vaild at current circle
     VROM_addrmap VROM_addrmap1(.*, .addr_in(real_address_ext), .addr_out(real_address_ext));
 
     initial begin
-        $readmemh("H:/fpgaNES/NES/ppu/test.txt",ram);
+        $readmemh("F:/fpgaNES/NES/ppu/test.txt",ram);
     end
     always @(negedge CLK) begin
         if(w)
