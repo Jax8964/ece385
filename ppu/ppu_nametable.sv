@@ -43,26 +43,26 @@ module render_screen(
 
        logic  counter_halt;
        logic [11:0]  counter;
-       logic [8:0]   counter_up;
-       ppu_counter1 ppu_counter0(.*, .reset(RESET), .halt(counter_halt), .max(8'd339) );
+       logic [8:0]   counter_up, counter_max;
+       ppu_counter1 ppu_counter11(.*, .reset(RESET), .halt(counter_halt), .max(counter_max) );
        always_comb begin
               counter_halt = '0;
               counter_up = counter[11:3]; 
        end
-       logic [8:0]   n_scanlines, n_scanlines_next;         // 0 ~ 260
+       logic [8:0]   n_scanlines, n_scanlines_prev;         // 0 ~ 260
+       logic n_scanlines_reset;
+       logic counter_end;
        always_ff @(posedge CLK) begin
-              if(RESET)
+              counter_max <= 9'd339;
+              n_scanlines <= n_scanlines;
+              n_scanlines_prev <= n_scanlines;
+              n_scanlines_reset <= (n_scanlines == 9'd261);
+              counter_end <= counter == {9'd300,3'b0};
+              if(RESET) begin
                      n_scanlines <= '0;
-              else
-                     n_scanlines <= n_scanlines_next;
-       end
-       logic scanlines_end;
-       always_comb begin
-              scanlines_end = counter == {9'(260),3'b0};
-              if (scanlines_end && n_scanlines == 8'd260)
-                     n_scanlines_next = '0;
-              else 
-                     n_scanlines_next = n_scanlines_next + (scanlines_end ? 9'b1 : '0);
+              end
+              else if (counter_end)
+                     n_scanlines <=  n_scanlines_reset ? '0 : n_scanlines_prev + 9'd1 ;
        end
 
        logic         prepare;
@@ -78,10 +78,18 @@ endmodule
 
 
 
+typedef enum logic  [3:0]    { 
+
+              line_prepare_, 
+              line_start_, 
+              line_write_, line_write_1,
+              line_finish_ 
+
+} line_state_t;
 
 module rendering_scanline(
        input logic          CLK, RESET,
-       input logic [8:0]    scroll_x_in, scroll_y_in,  // 0~511, 0~255 | 0~479, 0~255
+       input logic [8:0]    scroll_x_in, scroll_y_in,  // 0~511,  | 0~479, 
        input logic [7:0]    dy_line,              // in camera, 0 ~ 240
        input logic          prepare, 
 
@@ -99,62 +107,63 @@ module rendering_scanline(
        assign               scroll_y_next = scroll_y_in + 9'(dy_line);
        
        logic [4:0]          dx;           // 0 ~ 31
-       logic                dx_inc;
+       logic                dx_inc;       // tiles in oneline
 
-       enum logic  [3:0]    { 
-
-              line_prepare_, 
-              line_start_, 
-              line_write_, line_write_1,
-              line_finish_ 
-
-       } state, state_next;
+       line_state_t state, state_next;
 
        always_ff @(posedge CLK) begin
+              if(RESET)
+                     state <=   line_finish_;
+              else 
+                     state <=   state_next;
+
               scroll_x <= prepare ? scroll_x_in : scroll_x;
               scroll_y <= prepare ? scroll_y_next : scroll_y;
-              dx       <= prepare ? '0 : (dx_inc  ? dx + 5'd1 : dx);
-              state    <= prepare ? line_prepare_     : state_next;
+              dx       <= prepare ? '0 : dx + 5'(dx_inc);
        end
 
        logic [5:0]    rough_scroll_x, rough_scroll_y;
        logic [2:0]   fine_scroll_x, fine_scroll_y;
-       assign rough_scroll_x = scroll_x[8:3] + {1'b0,dx};      // unit: tile
-       assign rough_scroll_y = scroll_y[8:3] ;
+       assign rough_scroll_x = scroll_x[8:3] + {1'b0,dx};      // unit: tile        whole map
+       assign rough_scroll_y = scroll_y[8:3] ;                        // whole map
        assign fine_scroll_x  = scroll_x[2:0] ;          // offset inside one tile 
        assign fine_scroll_y  = scroll_y[2:0] ;
 
        logic render_8pixel;
        logic [7:0]   color0, color1, color2, color3;
-       rendering_get_8pixel rendering_get_8pixel0(.*, .start(render_8pixel));
+       rendering_get_8pixel rendering_get_8pixel0(.*, .start(render_8pixel));              // get 8 pixcel
 
-       logic  counter_set;
+
+       logic  counter_reset, counter_halt;
        logic [11:0]  counter;
-       ppu_counter ppu_counter0(.*, .set(counter_set), .init('0) );
+       ppu_counter1 ppu_counter111(.*, .reset(counter_reset), .halt(counter_halt), .max('1) );
         
-       assign render_8pixel = counter[5:3] == 3'd0;
+       assign render_8pixel = counter[5:3] == 3'd0;     // every eight ticks
        
 
        logic [15:0] color0_buf, color1_buf, color2_buf, color3_buf;
+       logic [2:0] ticks;
+       assign ticks = counter[5:3];
 
-       always_ff @(posedge counter[2]) begin
-              color0_buf = counter[5:3] == 3'd7 ? {color0_buf[14:7], color0} : {color0_buf[14:0], 1'b0};
-              color1_buf = counter[5:3] == 3'd7 ? {color1_buf[14:7], color1} : {color1_buf[14:0], 1'b0};
-              color2_buf = counter[5:3] == 3'd7 ? {color2_buf[14:7], color2} : {color2_buf[14:0], 1'b0};
-              color3_buf = counter[5:3] == 3'd7 ? {color3_buf[14:7], color3} : {color3_buf[14:0], 1'b0};
+       always_ff @(posedge counter[2]) begin            // shift or load every tick
+              color0_buf = ticks == 3'd7 ? {color0_buf[14:7], color0} : {color0_buf[14:0], 1'b0};
+              color1_buf = ticks == 3'd7 ? {color1_buf[14:7], color1} : {color1_buf[14:0], 1'b0};
+              color2_buf = ticks == 3'd7 ? {color2_buf[14:7], color2} : {color2_buf[14:0], 1'b0};
+              color3_buf = ticks == 3'd7 ? {color3_buf[14:7], color3} : {color3_buf[14:0], 1'b0};
        end
 
        always_comb begin
               buff_data = {4'b0, color3_buf[15], color2_buf[15], color1_buf[15], color0_buf[15]};
-              buff_addr = {rough_scroll_y[4:0], fine_scroll_y, dx, counter[5:3]};
+              buff_addr = {scroll_y[7:0], dx - 5'd2, counter[5:3]};
               buff_w = '0;
-              counter_set = 0;
+              counter_reset = 0;
+              counter_halt = 0;
               dx_inc = 0;
               state_next = line_finish_;
               case(state)
                      line_prepare_: 
                      begin
-                            if(counter[5:0] == 6'b111110) 
+                            if(counter[5:0] == 6'b111110) // tick = 7.75
                             begin
                                    dx_inc = '1;
                                    state_next = line_start_;
@@ -164,17 +173,17 @@ module rendering_scanline(
                      end
                      line_start_: 
                      begin
-                            if(counter[5:0] == 6'b111110) 
+                            if(counter[5:0] == 6'b111110)      // tick = 7.75
                             begin
                                    dx_inc = '1;
                                    state_next = line_write_;
                             end
                             else 
-                                   state_next = line_prepare_;
+                                   state_next = line_start_;
                      end
                      line_write_: 
                      begin
-                            if(counter[5:3] == fine_scroll_x) 
+                            if(ticks == fine_scroll_x) 
                             begin
                                    state_next = line_write_1;
                             end
@@ -183,17 +192,19 @@ module rendering_scanline(
                      end
                      line_write_1: 
                      begin
-                            dx_inc = counter[5:0] == 6'b111110;
-                            buff_w = counter[2:0] == 3'b010;
-                            if(counter == (12'(fine_scroll_x) + 255) ) 
+                            dx_inc = counter[5:0] == 6'b111110;       // tick = 7.75
+                            buff_w = counter[2:1] == 2'b01;
+                            if(counter[11:3] == (12'(fine_scroll_x) + 255) ) 
                             begin
                                    state_next = line_finish_;
                             end
                             else 
                                    state_next = line_write_1;
                      end
-                     
-                     line_finish_: counter_set = 1;
+                     line_finish_: begin
+                            counter_reset = 1;
+                            state_next = prepare ? line_prepare_ : line_finish_;
+                     end
                      default : ;
               endcase
        end
@@ -202,7 +213,14 @@ module rendering_scanline(
 endmodule
 
 
+typedef enum logic  [3:0]    { 
 
+       render8_start_, render8_start_1, render8_start_2,
+       render8_attri_, render8_attri_1,
+       render8_pattern_, render8_pattern_1, render8_pattern_2, render8_pattern_3,
+       render8_done
+
+} pixel_state_t;
 
 module rendering_get_8pixel(
        input logic          CLK, RESET,
@@ -222,21 +240,13 @@ module rendering_get_8pixel(
        logic [2:0]   attribute_byte_offset;
        nametable_info nametable_info0(.*);
 
-       enum logic  [3:0]    { 
-
-              render8_start_, render8_start_1, render8_start_2,
-              render8_attri_, render8_attri_1,
-              render8_pattern_, render8_pattern_1, render8_pattern_2, render8_pattern_3,
-              render8_done
-
-       } state, state_next;
+       pixel_state_t state, state_next;
 
        logic [7:0]   color0_next, color1_next, color2_next, color3_next;
        logic [7:0]   n_pattern, n_pattern_next;
-       logic [7:0]   color0_addr, color1_addr;
+       logic [15:0]   color0_addr, color1_addr;
 
        pattern_adressing pattern_adressing0(.*);
-
 
        logic         attr_temp[7:0];
        always_comb begin
@@ -269,15 +279,19 @@ module rendering_get_8pixel(
               color2_next = color2;
               color3_next = color3;
               n_pattern_next = n_pattern;
-              address_ext = nametable_addr;
+              address_ext = '0;
               case (state)
                      render8_start_ : begin
+                            address_ext = nametable_addr;
                             state_next = render8_start_1;
                      end
                      render8_start_1 : begin
+                            address_ext = nametable_addr;
+                            n_pattern_next = rom_ext;
                             state_next = render8_start_2;
                      end  
                      render8_start_2 : begin
+                            address_ext = nametable_addr;
                             n_pattern_next = rom_ext;
                             state_next = render8_attri_;
                      end    
@@ -295,6 +309,7 @@ module rendering_get_8pixel(
                      end      
                      render8_pattern_ : begin
                             address_ext = color0_addr;
+                            color0_next = rom_ext;
                             state_next = render8_pattern_1;
                      end    
                      render8_pattern_1 : begin
@@ -304,6 +319,7 @@ module rendering_get_8pixel(
                      end
                      render8_pattern_2 : begin
                             address_ext = color1_addr;
+                            color1_next = rom_ext;
                             state_next = render8_pattern_3;
                      end    
                      render8_pattern_3 : begin
@@ -325,7 +341,7 @@ module pattern_adressing(
        input logic           pattern_select,
        input logic [2:0]     fine_scroll_y,
 
-       output logic [7:0]    color0_addr, color1_addr
+       output logic [15:0]    color0_addr, color1_addr
 );
        logic [11:0]  base_addr;
        always_comb begin

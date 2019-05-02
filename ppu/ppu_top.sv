@@ -81,15 +81,26 @@ VSO. ....
     logic [7:0]  PPU_color;
     logic [7:0]  VGA_palette_n;
     
-    PPU_ROM PPU_ROM0(.*, .w(PPUdata_w_prev), .address( {PPUaddrH, PPUaddrL} ), 
+    PPU_ROM PPU_ROM0( .w(PPUdata_w_prev), .address( {PPUaddrH, PPUaddrL} ), 
                         .data(reg_data), .out(PPU_rom_data), .out_ext(rom_ext), 
-                         .address_palette(PPU_color[3:0]), .out_palette(VGA_palette_n) );
+                         .address_palette(PPU_color[3:0]), .out_palette(VGA_palette_n), .*);
 
-    vga_buffer vga_buffer0(.*, 
+    vga_buffer vga_buffer0( 
         .w(buff_w), .address(buff_addr), .address_ext( {DrawY[7:0],DrawX[7:0] } ),
-        .data(buff_data), .out_ext(PPU_color) );  // TODO
+        .data(buff_data), .out_ext(PPU_color),
+        .*  );  // TODO
 
     vga_palette vga_palette0(.n_color(VGA_palette_n[5:0]), .red(VGA_R), .blue(VGA_B), .green(VGA_G));
+
+    // synthesis translate_off
+
+    initial begin
+        buff_store = $fopen("F:/fpgaNES/NES/ppu/ppu_buff.txt","w");
+    end
+    always  @(posedge buff_w)begin
+            $fwrite(buff_store,"%4X\t%2d\n", buff_addr, buff_data );
+    end
+    // synthesis translate_on
 
 /**************************** regs *******************************/
     always_ff @(posedge CLK) 
@@ -190,7 +201,7 @@ VSO. ....
         .*, 
         .pattern_select(background_pattern_table) );
 
-    assign NMI = set_vertical_blank;
+    assign NMI = set_vertical_blank & NMI_enable;
 
 endmodule
 

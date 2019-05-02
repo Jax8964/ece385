@@ -12,30 +12,32 @@
 
 
 module cpu6502_top(
-    input logic              CLOCK_50, //RESET, NMI,
+    input logic              CLOCK_50, RESET,//RESET, NMI,
     input logic [17:0]       SW,
     input logic [3:0]        KEY,
 
-     output logic [6:0]      HEX0, HEX1, HEX2, HEX3, HEX4, HEX5, HEX6, HEX7,
+     output logic [6:0]      HEX0, HEX1, HEX2, HEX3, 
      output logic [17:0]     LEDR,
      output logic [7:0]      LEDG,
      
     input logic              NMI,
-    input logic [7:0]        keycode,
+    input logic [15:0]       keycode,
 
     output logic [15:0]      addr, 
     input logic [7:0]        ppu_reg_data, 
+    output logic [7:0]       ALU_data_out,
+    output logic             ppu_reg_w, ppu_reg_r,
+
     input logic [15:0]       address_ext,
-    output logic [7:0]       mem_data_ext, ALU_data_out,
-    output logic             ppu_reg_w, ppu_reg_r
+    output logic [7:0]       mem_data_ext
 );
-    logic CLK, RESET, IRQ, CONTINUE, HALT;      // I/O input
+    logic CLK, IRQ, CONTINUE, HALT;      // I/O input
 
     state_t out_state;
     integer data_wr0;
     // synthesis translate_off
     initial begin
-        data_wr0 = $fopen("H:/fpgaNES/NES/cpu6502/test_result.txt","w");
+        data_wr0 = $fopen("F:/fpgaNES/NES/cpu6502/test_result.txt","w");
     end
     always  @(posedge (out_state == counter_1))begin
             $fwrite(data_wr0,"%4h\t%P \tA:%2X X:%2X Y:%2X P:%2X SP:%2X\n", PC, CONTROL0.exe_state, A, X, Y, SR, SP );
@@ -45,7 +47,6 @@ module cpu6502_top(
         CLK = CLOCK_50;
     end
     always_ff @(posedge CLK) begin
-        RESET <= ~KEY[0];	
         IRQ <= ~KEY[2];
         CONTINUE <= ~KEY[3];
         HALT <= SW[17];        
@@ -121,10 +122,10 @@ module cpu6502_top(
     HexDriver HexDriver1(.In0(PC[7:4]), .Out0(HEX1));
     HexDriver HexDriver2(.In0(PC[11:8]), .Out0(HEX2));
     HexDriver HexDriver3(.In0(PC[15:12]), .Out0(HEX3));
-    HexDriver HexDriver4(.In0('0), .Out0(HEX4));
-    HexDriver HexDriver5(.In0('0), .Out0(HEX5));
-    HexDriver HexDriver6(.In0(mem_data_ext[3:0]), .Out0(HEX6));
-    HexDriver HexDriver7(.In0(mem_data_ext[7:4]), .Out0(HEX7));
+    // HexDriver HexDriver4(.In0('0), .Out0(HEX4));
+    // HexDriver HexDriver5(.In0('0), .Out0(HEX5));
+    // HexDriver HexDriver6(.In0(mem_data_ext[3:0]), .Out0(HEX6));
+    // HexDriver HexDriver7(.In0(mem_data_ext[7:4]), .Out0(HEX7));
 
 endmodule
 

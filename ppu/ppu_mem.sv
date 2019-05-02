@@ -64,7 +64,7 @@ module PPU_ROM(              // data vaild at current circle
     logic [7:0] palette_ [0:31];
     logic [13:0] real_address, real_address_ext; 
     VROM_addrmap VROM_addrmap0(.*, .addr_in(address), .addr_out(real_address));
-    VROM_addrmap VROM_addrmap1(.*, .addr_in(real_address_ext), .addr_out(real_address_ext));
+    VROM_addrmap VROM_addrmap1(.*, .addr_in(address_ext), .addr_out(real_address_ext));
 
     initial begin
         $readmemh("F:/fpgaNES/NES/ppu/mali.txt",ram);

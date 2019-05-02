@@ -7,22 +7,70 @@ logic         CLK;
 reg RESET;
 logic NMI;
 ppu_top ppu_test(
-                    .*, .mirroring_type('0), .reg_data_in('0), .addr('0), .r('0), .w('0), 
-                    .reg_data_out(), .cpu_address_ext(), .cpu_data_ext(),
+                    .*, .mirroring_type('0), 
+                    .reg_data_in('0), .addr('0), .r('0), .w('0), .reg_data_out(), 
+                    .cpu_address_ext(), .cpu_data_ext(),
                     .DrawX('0), .DrawY('0), .VGA_B(), .VGA_R(), .VGA_G()
      ); 
 logic [8:0] render_counter, n_scanlines;
 logic       prepare;
+logic counter_reset;
+logic counter_halt;
+logic [8:0] counter_max;
+logic n_scanlines_reset, counter_end;
+line_state_t state;
+logic [11:0]  line_counter;
+logic  [8:0]         scroll_x, scroll_y;
+logic [7:0]   color0, color1, color2, color3;
+logic [4:0]   dx;
+logic       shift_reg_clk, render_8pixel, buff_w;
+logic [2:0]  ticks;
+logic [15:0] buff_addr;
+logic [7:0]  buff_data;
+logic [15:0]  nametable_addr, attribute_addr;
+logic [15:0]   color0_addr, color1_addr;
+logic [15:0]  rom_address_ext, rom_inner_addr;
+logic [2:0]   attribute_byte_offset;
+pixel_state_t pixel_state;
+logic [7:0] rom_ext;
+logic [7:0]   pattern_number;
 always_comb begin
-    render_counter = ppu_test.render_screen0.counter[11:3];
+    render_counter = ppu_test.render_screen0.ppu_counter11.counter[11:3];
+    counter_reset = ppu_test.render_screen0.RESET;
+    counter_halt = ppu_test.render_screen0.ppu_counter11.halt;
+    counter_max  = ppu_test.render_screen0.ppu_counter11.max;
     n_scanlines = ppu_test.render_screen0.n_scanlines;
     prepare = ppu_test.render_screen0.prepare;
+    n_scanlines_reset = ppu_test.render_screen0.n_scanlines_reset;
+    counter_end = ppu_test.render_screen0.counter_end;
+    state = ppu_test.render_screen0.rendering_scanline0.state;
+    line_counter = ppu_test.render_screen0.rendering_scanline0.counter;
+    scroll_x = ppu_test.render_screen0.rendering_scanline0.scroll_x;
+    scroll_y = ppu_test.render_screen0.rendering_scanline0.scroll_y;
+    color0 = ppu_test.render_screen0.rendering_scanline0.color0;
+    color1 = ppu_test.render_screen0.rendering_scanline0.color1;
+    color2 = ppu_test.render_screen0.rendering_scanline0.color2;
+    color3 = ppu_test.render_screen0.rendering_scanline0.color3;
+    dx = ppu_test.render_screen0.rendering_scanline0.dx;
+    shift_reg_clk = line_counter[2];
+    render_8pixel = ppu_test.render_screen0.rendering_scanline0.render_8pixel;
+    ticks = line_counter[5:3];
+    buff_addr = ppu_test.render_screen0.rendering_scanline0.buff_addr;
+    buff_data = ppu_test.render_screen0.rendering_scanline0.buff_data;
+    buff_w = ppu_test.render_screen0.rendering_scanline0.buff_w;
+    nametable_addr =  ppu_test.render_screen0.rendering_scanline0.rendering_get_8pixel0.nametable_addr;
+    attribute_addr =  ppu_test.render_screen0.rendering_scanline0.rendering_get_8pixel0.attribute_addr;
+    color0_addr =  ppu_test.render_screen0.rendering_scanline0.rendering_get_8pixel0.color0_addr;
+    color1_addr =  ppu_test.render_screen0.rendering_scanline0.rendering_get_8pixel0.color1_addr;
+    pixel_state =  ppu_test.render_screen0.rendering_scanline0.rendering_get_8pixel0.state;
+    rom_ext =  ppu_test.render_screen0.rendering_scanline0.rendering_get_8pixel0.rom_ext;
+    attribute_byte_offset =  ppu_test.render_screen0.rendering_scanline0.rendering_get_8pixel0.attribute_byte_offset;
+    pattern_number =  ppu_test.render_screen0.rendering_scanline0.rendering_get_8pixel0.n_pattern;
+    rom_address_ext =  ppu_test.render_screen0.rendering_scanline0.rendering_get_8pixel0.address_ext;
+    rom_inner_addr = ppu_test.PPU_ROM0.real_address_ext;
+
 end
 
-logic [11:0] counter_;
-ppu_counter1 ppu_counter1_test(.*, .reset(RESET), .halt('0), .max(8'd339), .counter(counter_) );
-logic [8:0] max;
-assign max = ppu_counter1_test.max;
 //\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 always begin : CLOCK_GENERATION
 #1 CLK = ~CLK;
@@ -37,13 +85,13 @@ RESET = '0;
 #2;
 RESET = '1;
 
-#4;
+#8;
 RESET = '0;
 
 
 
 
-#40000000;
+#400000;
 
 
 

@@ -36,11 +36,13 @@ module ppu_counter1(
             counter <= '0;
             max_store <= max;
         end
-        else 
+        else begin
             counter <= counter_next;
+            max_store <= max_store;
+        end
     end
     always_comb begin
-        case( {halt, (counter[11:3] == max)} )
+        case( {halt, counter == {max, 3'b111} } )
             2'b10:  counter_next = counter;
             2'b01:  counter_next = '0;
             default : counter_next = counter + 12'd1;

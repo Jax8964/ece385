@@ -1,14 +1,26 @@
-
+`include "../ppu/ppu_top.sv" 
 module testbenchPPU();
 timeunit 10ns;	
 timeprecision 1ns;
 logic         CLK;
 /////////////////////////////////
 reg RESET;
-reg halt;
-reg [8:0] max;
-logic [11:0] counter;
-ppu_counter1 ppu_counter1_test(.*, .reset(RESET) );
+              logic [7:0]  VGA_R,        //VGA Red
+                                 VGA_G,        //VGA Green
+                                 VGA_B;        //VGA Blue
+              logic        VGA_CLK,      //VGA Clock
+                                 VGA_SYNC_N,   //VGA Sync signal
+                                 VGA_BLANK_N,  //VGA Blank signal
+                                 VGA_VS,       //VGA virtical sync signal
+                                 VGA_HS;       //VGA horizontal sync signal
+NES_pure NES_pure_test(
+    
+    .CLOCK_50(CLK), .KEY({2'b1, ~RESET}), 
+    .SW('0), .HEX0(), .HEX1(), .HEX2(), .HEX3(), .HEX4(), .HEX5(), .HEX6(), .HEX7(), 
+    .LEDG(), .LEDR(), .*
+
+
+);
 
 //\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 always begin : CLOCK_GENERATION
@@ -20,18 +32,17 @@ end
 initial begin: TEST_VECTORS
 /////////////////////////////////////////
 RESET = '0;
-halt = '0;
-max = 12'd339;
+
 #2;
 RESET = '1;
 
-#4;
+#8;
 RESET = '0;
 
 
 
 
-#4000;
+#400000;
 
 
 

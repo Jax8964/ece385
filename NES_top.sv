@@ -53,7 +53,7 @@ module NES_top( input            CLOCK_50,
                     );
     
     logic Reset_h, Clk;
-    logic [7:0] keycode;
+    logic [15:0] keycode;
     
     assign Clk = CLOCK_50;
     always_ff @ (posedge Clk) begin
@@ -128,25 +128,30 @@ module NES_top( input            CLOCK_50,
     logic [15:0]        cpu_address_ext;
     logic  [7:0]        cpu_data_ext;
     
-    cpu6502_top cpu6502_top0( .*, 
+    cpu6502_top cpu6502_top0( .*, .RESET(Reset_h),
                               .ppu_reg_data(reg_data_out), 
                               .ALU_data_out(reg_data_in),
                               .address_ext(cpu_address_ext),
                               .mem_data_ext(cpu_data_ext)
     );
-    ppu_top ppu_top0(   .*, 
-                        .CLK(CLOCK_50), .RESET(Reset_h),
-                        .mirroring_type(SW[0]),
-                        .r(ppu_reg_r), 
-                        .w(ppu_reg_w)
-                 );
-
-
+    // ppu_top ppu_top0(   .*, 
+    //                     .CLK(CLOCK_50), .RESET(Reset_h),
+    //                     .mirroring_type(SW[0]),
+    //                     .r(ppu_reg_r), 
+    //                     .w(ppu_reg_w)
+    //              );
+    ppu_top ppu_test(
+                    .*, .CLK(CLOCK_50), .RESET(Reset_h),
+                    .mirroring_type('0), .reg_data_in('0), .addr('0), .r('0), .w('0), 
+                    .reg_data_out(), .cpu_address_ext(), .cpu_data_ext(),
+     ); 
+     
 	 
     // Display keycode on hex display
-   // HexDriver hex_inst_0 (keycode[3:0], HEX0);
-   // HexDriver hex_inst_1 (keycode[7:4], HEX1);
-    
+   HexDriver hex_inst_0 (keycode[3:0], HEX4);
+   HexDriver hex_inst_1 (keycode[7:4], HEX5);
+   HexDriver hex_inst_2 (keycode[11:8], HEX6);
+   HexDriver hex_inst_3 (keycode[15:12], HEX7);
     /**************************************************************************************
         ATTENTION! Please answer the following quesiton in your lab report! Points will be allocated for the answers!
         Hidden Question #1/2:

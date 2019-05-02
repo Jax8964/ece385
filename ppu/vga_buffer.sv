@@ -10,7 +10,9 @@ module vga_buffer(
 
 );
     logic [7:0] ram [0:16'hffff];
-    
+   initial begin
+        $readmemh("F:/fpgaNES/NES/ppu/mali.txt",ram);
+    end
     always @(negedge CLK) begin
         if(w)
             ram[address] <= data;
