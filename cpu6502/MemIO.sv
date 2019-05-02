@@ -57,21 +57,21 @@ module MemIO(
         gamepad_r = 0;
         ppu_reg_w = 0; 
         ppu_reg_r = 0;
-        if (addr[15:13] == 3'b001 | addr == 16'h4014) begin
-            ppu_reg_w = w;
-            ppu_reg_r = r;
-            data = ppu_reg_data;
-        end
-        else if (addr[15:1] == 15'h200b) begin
-            gamepad_w = w;
-            gamepad_r = r;
-            data = gamepad_data;
-        end
-        else begin
+    //     if (addr[15:13] == 3'b001 | addr == 16'h4014) begin
+    //         ppu_reg_w = w;
+    //         ppu_reg_r = r;
+    //         data = ppu_reg_data;
+    //     end
+    //     else if (addr[15:1] == 15'h200b) begin
+    //         gamepad_w = w;
+    //         gamepad_r = r;
+    //         data = gamepad_data;
+    //     end
+    //     else begin
             mem_w = w;
             mem_r = r;
             data = mem_data;
-        end
+    //     end
     end
     always_ff @(posedge CLK) begin
         MDRL <= MEM_LDMDRL ? data : MDRL;

@@ -10,7 +10,7 @@ reg          NMI;
 reg [7:0]    keycode;
 
 cpu6502_top cpu6502_top_test(.*,.CLOCK_50(CLK), .KEY({3'b1,~RESET}),
-    .HEX0(), .HEX1(), .HEX2(), .HEX3(), .HEX4(), .HEX5(), .HEX6(), .HEX7(), 
+    .HEX0(), .HEX1(), .HEX2(), .HEX3(), .keycode('0),
     .LEDR(), .LEDG(), .addr(), .ppu_reg_data(), .address_ext(), .mem_data_ext(), .ALU_data_out(), .ppu_reg_w(), .ppu_reg_r()
 );
 
@@ -25,8 +25,11 @@ logic [7:0]     A,              // regs
                 ALUL, ALUH,     // ALU output
                 ALUL0, ALUL1, 
                 MDRL, MDRH;     // mem readed data
-logic [15:0] addr;
-logic [7:0]  cpu_mem_out;
+logic [15:0] addr, mem_address, real_address;
+logic [7:0]  cpu_mem_out, mem_inner_data;
+logic MEM_LDMDRL;
+ALU_operation_t ALU_operation;
+ALU_MUX_t ALU_MUX;
 always_comb begin
     state = cpu6502_top_test.CONTROL0.state;
     PC = cpu6502_top_test.PC;
@@ -44,6 +47,12 @@ always_comb begin
     MDRL = cpu6502_top_test.MDRL;
     MDRH = cpu6502_top_test.MDRH;
     cpu_mem_out = cpu6502_top_test.mem_data;
+    mem_address = cpu6502_top_test.cpu_memory0.address;
+    real_address = cpu6502_top_test.cpu_memory0.real_address;
+    mem_inner_data = cpu6502_top_test.cpu_memory0.out;
+    MEM_LDMDRL = cpu6502_top_test.CONTROL0.MEM_LDMDRL;
+    ALU_operation = cpu6502_top_test.ALU_operation;
+    ALU_MUX = cpu6502_top_test.ALU_MUX;
 end
 
 //\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\

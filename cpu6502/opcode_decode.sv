@@ -6,7 +6,7 @@ typedef enum logic [7:0] {
 	branch_,
 
 	addr_none,
-    addr_abs, addr_abs1, addr_abs2,  // M[]    2
+    addr_abs, addr_abs1, addr_abs2, addr_abs3,  // M[]    2
 	addr_absX,addr_absX1, addr_absX2,	//  M[]+X   unsigned	2
 	addr_absY, addr_absY1, addr_absY2,	//  M[]+Y   unsigned	2
 	addr_relative,

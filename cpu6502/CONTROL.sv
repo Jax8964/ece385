@@ -161,7 +161,12 @@ module CONTROL_unit(
             end   
             addr_abs2: begin     
                 ADDR_MUX = ADDR_MDR;  
-                `ADDR_PRE_READ
+                MEM_LDMAR = 1;
+                next_state = addr_abs3;
+            end   
+            addr_abs3: begin     
+                ADDR_MUX = ADDR_MAR;  
+                MEMIO_R = mem_read_en; MEM_LDMDRL =  mem_read_en;
                 next_state = exe_state;
             end   
 // operand[1:0] + unsigned X  is addr 
@@ -781,7 +786,8 @@ module CONTROL_unit(
 
             counter_ : begin        // 5
                 B_flag = 0;
-                next_state = counter_out == 4 ?  counter_1 : counter_;
+                //next_state = counter_out == 4 ?  counter_1 : counter_;
+                next_state = counter_1;
                 //next_state = CONTINUE ? counter_1 : counter_;
             end
             counter_1 : begin
